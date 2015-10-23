@@ -1,0 +1,25 @@
+@import url(print.css);
+
+#topbar-container img, #topbar-search, ul#udm, #body-navbar, .socialmedia-blurb, #footer-container, #footer-links {
+        display: none;
+}
+
+#body-header h1 {
+        font-size: 28px;
+}
+
+#body-main-content img {
+        border: none;
+}
+
+#body-main-content h1, #body-relatedinfo h1 {
+        font-size: 24px;
+}
+
+#body-main-content h2 {
+        font-size: 20px;
+}
+
+#body-main-content h3 {
+        font-size: 16px;
+}
