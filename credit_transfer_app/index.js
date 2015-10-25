@@ -2,10 +2,15 @@ var express = require('express');
 var app = express();
 var fs = require('fs');
 var path = require('path');
+var pg = require("pg");
 var rootDirectory = '/admission/transfer/credits';
 var rootAppDirectory = '/admission/transfer/credits/app';
+var conString = "pg://postgres:Candi7@localhost:5432/credit_transfer";
+var client = new pg.Client(conString);
 app.use('/static', express.static(__dirname + '/static'));
 app.use(rootAppDirectory+'/static', express.static(__dirname + '/static'));
+app.set('views',path.join(__dirname, './views'));
+app.set('view engine', 'jade');
 
 function wrapPage(pageBody){
 	pageTop = fs.readFileSync(path.join(__dirname, './html/wrapper') + '/top.html', 'utf-8');	
@@ -29,8 +34,21 @@ app.get(rootDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
-  pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));	
-  res.send(pageBody);
+ // pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));
+
+client.connect();
+var query = client.query("SELECT schoolName From Schools;");
+var test;
+query.on("row", function (row, result) {
+    result.addRow(row);
+});
+query.on("end", function (result) {
+    console.log( JSON.stringify(result.rows, null, "    "));
+    client.end();
+});
+// res.send(pageBody);
+  test = "test";
+  res.render("start", {test:test});
 });
 
 //Wireframe #9
