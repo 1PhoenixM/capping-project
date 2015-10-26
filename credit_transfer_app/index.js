@@ -11,6 +11,11 @@ app.use('/static', express.static(__dirname + '/static'));
 app.use(rootAppDirectory+'/static', express.static(__dirname + '/static'));
 app.set('views',path.join(__dirname, './views'));
 app.set('view engine', 'jade');
+var bodyParser = require('body-parser')
+app.use( bodyParser.json() );       
+app.use(bodyParser.urlencoded({    
+  extended: true
+})); 
 
 function wrapPage(pageBody){
 	pageTop = fs.readFileSync(path.join(__dirname, './html/wrapper') + '/top.html', 'utf-8');	
@@ -34,9 +39,9 @@ app.get(rootDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
- // pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));
-
-client.connect();
+ //pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));
+ //res.send(pageBody);
+ client.connect();
 var query = client.query("SELECT schoolName From Schools;");
 var test;
 query.on("row", function (row, result) {
@@ -139,6 +144,11 @@ app.get(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
 });
 
 //To be added: Administrator action pages for Admissions/Registrar to alter the database.
+
+//Route to post the account data to (accessed as an object)
+app.post(rootAppDirectory + '/createAccount', function (req, res){
+	console.log(req.body);
+});
 
 var server = app.listen(8080, function () {
   var host = server.address().address;
