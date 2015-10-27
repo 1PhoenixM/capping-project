@@ -38,18 +38,25 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 
 client.connect();
 var query = client.query("SELECT schoolName From Schools;");
-var test;
+var test = [];
 query.on("row", function (row, result) {
-    result.addRow(row);
+        result.addRow(row);
+	test[0] = (result.rows[0].schoolname);
+        console.log(test);
+	res.render("start", {test:test});
+
+//	for (school in result){
+//	console.log(school.schoolName);
+	
 });
 query.on("end", function (result) {
-    console.log( JSON.stringify(result.rows, null, "    "));
-    client.end();
+//    console.log( JSON.stringify(result.rows, null, "    "));
+ 
+   client.end();
 });
+
 // res.send(pageBody);
-  test = "test";
-  res.render("start", {test:test});
-});
+ });
 
 //Wireframe #9
 //The user account creation form. Can pass in query parameters here via the req variable, to handle form errors.
