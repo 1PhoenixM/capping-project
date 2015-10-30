@@ -1,0 +1,324 @@
+doctype html
+html.gecko.ff3.win.js(lang='en')
+  head
+    meta(http-equiv='content-type', content='text/html; charset=UTF-8')
+    meta(charset='utf-8')
+    meta(http-equiv='x-ua-compatible', content='ie=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1')
+    title Admission - Transferring Credits: Marist College
+    meta(name='keywords', content='transferring credits, transfer credit evaluation')
+    meta(name='description', content='Information on transferring credits from other institutions to Marist College.')
+    meta(name='verify-v1', content='AqT6cZcob1cv6R4Cp1W7HUkY9ySzVBKnXf/L+fwYhcw=')
+    //
+      if lt IE 9script(src='/includes/html5.js')
+    link(rel='stylesheet', href='static/unsemantic-grid-base.css')
+    noscript
+      link(rel='stylesheet', href='/static/unsemantic-grid-desktop.css')
+    //
+      if lt IE 8link(rel='stylesheet', href='/static/unsemantic-grid-desktop.css')
+    //if gt IE 7
+      | [if gt IE 7]
+    script(src='static/ga.js', async='', type='text/javascript')
+    script.
+      var ADAPT_CONFIG = {
+      path: '/css/',
+      dynamic: true,
+      range: [
+      '0 to 767px = unsemantic-grid-mobile.css',
+      '767px = unsemantic-grid-desktop.css'
+      ]
+      };
+    script(src='static/adapt.js')
+    link(href='static/unsemantic-grid-desktop.css', media='screen', rel='stylesheet')
+    // <![endif]
+    link(rel='stylesheet', media='screen', href='static/sub.css')
+    link(rel='stylesheet', media='print', href='static/sub-print.css')
+    link(rel='stylesheet', media='screen', href='static/jquery-ui.css')
+    style.
+      body { font-size: 12pt };  
+    script(src='static/jquery_004.js')
+    script(src='static/jquery-ui.js')
+    script(src='static/jquery.js')
+    script(src='static/common.js')
+    script(src='static/jquery_002.js')
+    script(src='static/css-browser-selector.js')
+    //if gt IE 7
+      | [if gt IE 7]
+    script(src='static/jquery_003.js')
+    script.
+      $(document).ready(function(){
+      $("table").responsiveTable({staticColumns: 0, scrollRight: false});
+      });
+    // <![endif]
+    script.
+      $(document).ready(function() {
+      $(".searchinput").watermark("Search...");
+      $("#autocomplete").autoSuggest({
+      ajaxFilePath : "/webapps/autocomplete/", // path to the ajax server file
+      ajaxParams   : "dummydata=dummyData", // attach all other extra parameters to send to ajaxFilepath
+      autoFill         : false,   // true, false
+      width            : "auto", // auto(obj width), any integer eg : 100px;
+      opacity          : "0.9", // opacity can be anything from 0.1 to 1.0
+      limit            : "10",   // auto(10 records), any integer
+      idHolder         : "id-holder",   // auto(10 records), any integer
+      match            : "contains" // starts,contains,ends
+      });
+      $("#autocomplete").attr("autocomplete","off");
+      var new_width = $(document).width();
+      $(".ipad #marist").width(new_width);
+      $(window).resize( function(){
+      if ($("body").width() <= 750){
+      $("#topbar-search").css("border-width", "0px");
+      }
+      else{
+      $("#topbar-search").css("border-width", "1px");
+      }
+      });
+      $(window).resize();
+      });
+  body
+    header
+      img(style='align:center;margin-right:500px;', src='static/MaristBanner.png')
+    #body-container.grid-container.grid-parent(role='main')
+      #body-main-content-container.grid-100.mobile-grid-100.grid-parent
+        #body-spacer.hide-on-mobile
+        aside#sidebar.grid-25.grid-parent(style='margin-top:15px;')
+          nav.grid-100.grid-parent
+            ul#mainnav
+              li
+                a.menuOff(href='http://www.marist.edu/admission/transfer/index.html')
+                  strong Transfer Students
+              li
+                a.menuOff(href='http://www.marist.edu/admission/transfer/application.html') Apply for Admission
+              li
+                a.menuOff(href='http://www.marist.edu/admission/transfer/scholarships.html') Scholarships
+              li
+                a.menuOff(href='https://www.marist.edu/admission/appstatus.html?apptype=transfer') Check Application Status
+              li
+                a.menuOff(href='http://www.marist.edu/admission/visiting.html') Visiting Marist
+              li
+                a.menuOff(href='https://www.marist.edu/webapps/inforequest/?type=transfer') Request Information
+              li
+                a.menuOff(href='http://www.marist.edu/academics/programs/') Majors & Minors
+              li
+                a.menuOn(href='http://www.marist.edu/admission/transfer/credits.html') Transferring Credits
+              li
+                a.menuOff(href='http://www.marist.edu/admission/transfer/checklist.html') Information for Incoming Transfer Students
+              li
+                a.menuOff(href='http://www.marist.edu/admission/transfer/faq.html') FAQ
+          section#body-contacts.grid-100.grid-parent(style='padding-left: 0px; padding-right: 0px;')
+            h2 Contact:
+            p
+              strong Email:
+              br
+              a(href='mailto:admission@marist.edu')
+                strong Admission
+              br
+              |     Rotunda 380
+              br
+              |     845.575.3226
+              br
+            p
+              strong Office hours:
+              br
+              |     Monday - Friday 8:30 - 5:00
+            //
+              <p>
+              <strong>Questions?</strong><br />
+              Ask a student<br />
+              <a href="aim:goim?screenname=MaristStudent">AIM: MaristStudent</a><br />
+              <a href="aim:goim?screenname=MaristStudent"></a><img
+              src="http://big.oscar.aol.com/MaristStudent?on_url=http://www.marist.edu/academics/advise/images/online.gif&amp;off_url=http://www.marist.edu/academics/advise/images/offline.gif"
+              alt="AIM Status" class="noborder" />
+              </p>
+            p
+              a(href='http://www.marist.edu/admission/florence/')
+                img(src='static/italy.png', alt='Marist Italy')
+          p#social-media.hide-on-mobile
+            a(href='http://www.marist.edu/socialmedia/', onclick="javascript:_gaq.push(['_trackPageview', '/G1/sidelink-social']);")
+              img(src='static/socialmedia-sub.png', alt='Social Media')
+        script.
+          $(document).ready(function(){
+          $(window).resize( function(){
+          if ($("body").width() <= 750){
+          if ($("#expand-mainnav").length == 0){
+          $("#mainnav li").hide();
+          $("#mainnav").prepend("<li id='expand-mainnav'><a href='#'><strong>Menu</strong><img src='http://www.marist.edu/currentstudents/images/plusminus.png' style='float:right'></a></li>");
+          $("#expand-mainnav").on("click", function(e){
+          e.preventDefault();
+          if ($("#mainnav li").eq(1).css("display") == "none"){
+          $("#mainnav li").not("#expand-mainnav").show();
+          }
+          else{
+          $("#mainnav li").not("#expand-mainnav").hide();
+          }
+          });
+          $("#body-contacts").css({"text-align": "left", "padding-left": "5px", "padding-right": "10px"}).remove().insertAfter("#body-main-content");
+          //$("#topbar-search").css("border-width", "0px");
+          }
+          }
+          else{
+          $("#body-contacts").css({"padding-left": 0, "padding-right": 0}).remove().insertAfter("#sidebar nav");
+          $("#expand-mainnav").remove();
+          $("#mainnav li").show();
+          //$("#topbar-search").css("border-width", "1px");
+          }
+          });
+          $(window).resize();
+          });
+        article#body-main-content.grid-75
+          aside#body-breadcrumbs
+            a(href='http://www.marist.edu/') home
+            |  > 
+            a(href='http://www.marist.edu/admission/') admission
+            |  > transfer students
+          div(style='position:absolute; left: 0px; top: 0px;')
+            a(href='http://cms.is.marist.edu/10?skin=oucampus&account=Main&site=Home&action=de&path=/admission/transfer/credits.html')
+              img(src='static/dired.gif', style='border:0px; width:8px; height:15px', alt='edit')
+          aside#body-relatedinfo
+            hr
+            .floatleft
+            
+            block content
+            
+    footer#footer-content.grid-container.grid-parent
+      section#footer-links
+        nav.grid-100.grid-parent.hide-on-mobile
+          .footer-column.grid-25
+            h2 About Marist
+            ul
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/pres.html') From the President
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/history.html') History & Heritage
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/visit.html') Visitors' Center
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/glance.html') Marist at a Glance
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/pdfs/financialstatements.pdf') Financial Statements
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/board.html') Board of Trustees
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/tour.html') Visitor Information
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/florence/') Marist in Italy
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/about/admin.html') Administration
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/strategicplanning/') Strategic Plan: 2011 - 2016
+          .footer-column.grid-25
+            h2 Admission
+            ul
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/freshman/') Freshman Students
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/transfer/') Transfer Students
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/adult/') Adult Students (age 22 & older)
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/graduate/') Graduate Students
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/international/') International Students
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/admission/military/') Military & Veterans
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/gpp/distancelearning/') Distance Learning
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/financialaid/') Financial Aid & Scholarships
+          .footer-column.grid-25
+            h2 Academics
+            ul
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/academics/') Academic Schools
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/academics/programs/') Majors & Academic Programs
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/academics/core/') The Marist Core
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/academics/calendars.html') Academic Calendars
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/registrar/catalog/') Course Catalogs
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/gpp/distancelearning/') Distance Learning
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/library/') Library
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/international/') Marist International Programs
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/academics/resources.html') Academic Resources
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/academics/special.html') Special Academic Opportunities
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/careerservices/') Career Services
+          .footer-column.grid-25
+            h2 Student Life
+            ul
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/studentlife/firstyear/') First Year Programs
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/housing/') Housing & Residential Life
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.maristdining.com/') Marist Dining
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/studentlife/activities.html') College Activities & Organizations
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://marist.bncollege.com/') Bookstore
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/computerstore/') Computer Store
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/healthservices/') Health Services
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/specialservices/') Special Services
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/counseling/') Counseling Services
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/studentlife/ministry/') Campus Ministry
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/studentlife/lgbtq/') LGBTQ Resources
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/studentlife/senioryear/') Senior Year Experience
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/studentlife/studentconduct/') Student Conduct
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/security/') Safety & Security
+              li
+                a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/maristmoney/') Marist ID/Marist Money
+        .home-blurb
+          a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink-social']);", href='http://www.marist.edu/socialmedia')
+            img(alt='Marist On...', src='Admission%20-%20Transferring%20Credits%20%20Marist%20College_files/socialmedia-sub.png')
+        p.footer-utility-content.grid-100
+          a(href='http://www.marist.edu/calendar/') Calendar
+          |  |
+          a(href='http://www.marist.edu/directory/') Directories
+          |  |
+          a(href='http://www.marist.edu/atoz/') Site A-Z Index
+          |  |
+          a(href='http://www.marist.edu/about/visit.html') Map & Directions
+          |  |
+          a(href='https://www.marist.edu/alumni/giving.html?recipient=campaign') Giving to Marist
+          |  |
+          a(href="javascript:newWin('http://jobs.marist.edu')") Jobs at Marist
+          br
+          br
+          |         Marist College, 3399 North Road, Poughkeepsie, NY 12601 | 845.575.3000
+          br
+          span
+            | © Copyright 2015 Marist College. All Rights Reserved. 
+            a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/disclaimers.html') Disclaimers
+            |  
+            a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/privacy.html') Privacy Policy
+            |  
+            a(href="javascript:newWin('http://m.marist.edu')") Mobile
+            |  
+            a(onclick="javascript:_gaq.push(['_trackPageview', '/G1/footerlink']);", href='http://www.marist.edu/contact/') Contact
+    script(type='text/javascript').
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-320870-1']);
+      _gaq.push(['_setDomainName', '.marist.edu']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();

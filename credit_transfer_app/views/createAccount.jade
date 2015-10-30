@@ -1,0 +1,38 @@
+extends ./wrapper.jade
+
+block content
+    h2 Create Account
+    p
+      | To create an account, fill in the following details. Only an e-mail address and password are required to create an account.
+    form(method='post', action='/admission/transfer/credits/app/createAccount')
+      | E-mail Address: 
+      input(type='text', name='emailAddress')
+      br
+      | Password: 
+      input(type='password', name='password')
+      br
+      | Confirm Password: 
+      input(type='password', name='confirmPassword')
+      br
+      hr
+      | Optional:
+      | First Name: 
+      input(type='text', name='firstName')
+      br
+      | Last Name: 
+      input(type='text', name='lastName')
+      br
+      | Address Line 1: 
+      input(type='text', name='address1')
+      br
+      | Address Line 2: 
+      input(type='text', name='address2')
+      br
+      | State: 
+      select(name='state')
+      br
+      | School: 
+      select(name='school')
+      // Should autopopulate this field based on what was selected at /start
+      br
+      input#submit(type='submit', value='Create')

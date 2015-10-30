@@ -1,0 +1,17 @@
+extends ./wrapper.jade
+
+block content
+    h2 Course Selection
+    br
+    p
+      | Select Courses that you have previously taken
+      br
+      form(action='post')
+        select
+          option(value='Marist') Dutechess
+        br
+        button#submit(type='submit') Submit Courses
+        a(href='/admission/transfer/credits/app/courseEvaluation') Submit
+        br
+        | Don't see a course? Submit a request 
+        a(href='/admission/transfer/credits/app/requestCourse') here

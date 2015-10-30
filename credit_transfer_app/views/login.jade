@@ -1,0 +1,15 @@
+extends ./wrapper.jade
+
+block content
+    h2 Login
+    form
+      | E-mail Address: 
+      input(type='text', name='emailAddress')
+      br
+      | Password: 
+      input(type='password', name='password')
+      submit Login
+    br
+    a(href='/admission/transfer/credits/app/forgotPassword') Forgot Password
+    br
+    a(href='/admission/transfer/credits/app/createAccount') Create Account
