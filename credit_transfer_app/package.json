@@ -9,7 +9,7 @@
   "author": "Unnamed Team",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "body-parser": "^1.14.1",
+    "body-parser": "~1.14.1",
     "ejs": "~2.3.4",
     "express": "~4.13.3",
     "jade": "^1.11.0",

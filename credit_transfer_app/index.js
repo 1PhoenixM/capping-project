@@ -7,6 +7,7 @@ var rootDirectory = '/admission/transfer/credits';
 var rootAppDirectory = '/admission/transfer/credits/app';
 var conString = "pg://postgres:Candi7@localhost:5432/credit_transfer";
 var client = new pg.Client(conString);
+client.connect();
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/admission/transfer/static', express.static(__dirname + '/static'));
 app.use('/admission/transfer/credits/static', express.static(__dirname + '/static'));
@@ -47,15 +48,12 @@ app.get(rootAppDirectory, function (req, res) {
 app.get(rootAppDirectory + '/start', function (req, res) {
  //pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));
  //res.send(pageBody);
-	client.connect();
-	var query = client.query("SELECT schoolName From Schools;");
+	var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
 	var test = [];
 	query.on("row", function (row, result) {
-			result.addRow(row);
-			test[0] = (result.rows[0].schoolname);
+		//	result.addRow(row);
+			test.push(row.schoolname);
 			console.log(test);
-			res.render("startPage", {test:test});
-
 			//	for (school in result){
 			//	console.log(school.schoolName);
 		
@@ -63,8 +61,8 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 
 	query.on("end", function (result) {
 			//    console.log( JSON.stringify(result.rows, null, "    "));
+			res.render("startPage", {test:test});
 	 
-			client.end();
 		});
 
 	// res.send(pageBody);

@@ -8,7 +8,9 @@ block content
     p
       | To begin, please select the institution from the following list from which the courses would be transferred. To save your data, you need to create an account.
     br
-    select#school
+    select
+        each school in test
+            option= school
     br
     a(href='/admission/transfer/credits/app/courseSelection') Next
     br
