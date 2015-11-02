@@ -68,9 +68,6 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 	// res.send(pageBody);
 });
 
-app.post('/school', function(req,res){
-  console.log(req.body);
-}
 
 //Wireframe #9
 //The user account creation form. Can pass in query parameters here via the req variable, to handle form errors.
@@ -123,7 +120,8 @@ app.get(rootAppDirectory + '/changePasswordSuccess', function (req, res) {
 
 //Wireframe #11
 //Allows user to select courses and update their existing course list.
-app.get(rootAppDirectory + '/courseSelection', function (req, res) {
+app.post(rootAppDirectory + '/courseSelection', function (req, res) {
+  console.log(req.body);  
   res.render("courseSelection", {});
 });
 
