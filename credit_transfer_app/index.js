@@ -68,6 +68,10 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 	// res.send(pageBody);
 });
 
+app.post('/school', function(req,res){
+  console.log(req.body);
+}
+
 //Wireframe #9
 //The user account creation form. Can pass in query parameters here via the req variable, to handle form errors.
 //Redirect user here if account creation fails.
