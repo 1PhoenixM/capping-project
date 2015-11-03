@@ -115,14 +115,17 @@ app.get(rootAppDirectory + '/changePasswordSuccess', function (req, res) {
 //Allows user to select courses and update their existing course list.
 app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   var userSchool = req.body.schools;
+  console.log(userSchool);
   var courses = [];
   var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "'";
   var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
   var query = client.query(queryString);
   query.on("row", function (row, result) {
      courses.push(row) });
-  console.log(courses);
-  res.render("courseSelection", {courses:courses});
+  query.on("end",function ( result){
+     console.log(courses);
+     res.render("courseSelection", {courses:courses});
+});
 });
 
 //Wireframe #12
