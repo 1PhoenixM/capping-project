@@ -40,7 +40,7 @@ app.get(rootDirectory, function (req, res) {
 });
 
 app.get(rootAppDirectory, function (req, res) {
-  res.render("startPage", {test:[]});
+  res.render("startPage", {schools:[]});
 });
 
 //Wireframe #2
@@ -49,11 +49,11 @@ app.get(rootAppDirectory + '/start', function (req, res) {
  //pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));
  //res.send(pageBody);
 	var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
-	var test = [];
+	var schools = [];
 	query.on("row", function (row, result) {
 		//	result.addRow(row);
-			test.push(row.schoolname);
-			console.log(test);
+			schools.push(row.schoolname);
+			console.log(schools);
 			//	for (school in result){
 			//	console.log(school.schoolName);
 		
@@ -61,7 +61,7 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 
 	query.on("end", function (result) {
 			//    console.log( JSON.stringify(result.rows, null, "    "));
-			res.render("startPage", {test:test});
+			res.render("startPage", {schools:schools});
 	 
 		});
 
