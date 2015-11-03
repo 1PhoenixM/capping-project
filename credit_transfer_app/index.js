@@ -51,18 +51,11 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 	var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
 	var test = [];
 	query.on("row", function (row, result) {
-		//	result.addRow(row);
 			test.push(row.schoolname);
-			console.log(test);
-			//	for (school in result){
-			//	console.log(school.schoolName);
-		
 		});
 
 	query.on("end", function (result) {
-			//    console.log( JSON.stringify(result.rows, null, "    "));
 			res.render("startPage", {test:test});
-	 
 		});
 
 	// res.send(pageBody);
@@ -121,8 +114,15 @@ app.get(rootAppDirectory + '/changePasswordSuccess', function (req, res) {
 //Wireframe #11
 //Allows user to select courses and update their existing course list.
 app.post(rootAppDirectory + '/courseSelection', function (req, res) {
-  console.log(req.body);  
-  res.render("courseSelection", {});
+  var userSchool = req.body.schools;
+  var courses = [];
+  var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "'";
+  var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
+  var query = client.query(queryString);
+  query.on("row", function (row, result) {
+     courses.push(row) });
+  console.log(courses);
+  res.render("courseSelection", {courses:courses});
 });
 
 //Wireframe #12
