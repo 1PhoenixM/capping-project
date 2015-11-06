@@ -10,6 +10,7 @@ block content
         div(id='selectors')
           select(id='courses',name='courses')
             each course in courses
+<<<<<<< HEAD
               option(value=course, selected=selected)= course
               input(type='submit',value='Select Course')
           select(onchange='getCourseNumbers()')
@@ -18,6 +19,10 @@ block content
           br
         button#submit(type='submit') Submit Courses
         a(href='/admission/transfer/credits/app/courseEvaluation') Submit
+=======
+                option(value=course, selected=selected)= course
+        input(type='submit',value='Select Course')
+>>>>>>> 10cbce6ad3033ebe7555702aa3a07a646f2cd5d6
         br
         | Don't see a course? Submit a request 
         a(href='/admission/transfer/credits/app/requestCourse') here
