@@ -6,10 +6,12 @@ block content
     p
       | Select Courses that you have previously taken
       br
-      form(action='post')
+      form(action='/admission/transfer/credits/app/courseEvalutation',method='POST')
         div(id='selectors')
-          select
-            option(value='Marist') Dutechess
+          select(id='courses',name='courses')
+            each course in courses
+              option(value=course, selected=selected)= course
+              input(type='submit',value='Select Course')
           select(onchange='getCourseNumbers()')
             each department in depts
               option= department

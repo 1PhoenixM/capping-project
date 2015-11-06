@@ -46,19 +46,15 @@ app.get(rootAppDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
- //pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/start.html', 'utf-8'));
- //res.send(pageBody);
 	var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
-	var test = [];
+	var schools = [];
 	query.on("row", function (row, result) {
-			test.push(row.schoolname);
+			schools.push(row.schoolname);
 		});
 
 	query.on("end", function (result) {
-			res.render("startPage", {test:test});
+			res.render("startPage", {schools:schools});
 		});
-
-	// res.send(pageBody);
 });
 
 
