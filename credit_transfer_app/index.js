@@ -117,7 +117,7 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
   var query = client.query(queryString);
   query.on("row", function (row, result) {
-     courses.push(row) });
+     courses.push(row.coursename) });
   query.on("end",function ( result){
      res.render("courseSelection", {courses:courses});
 });
