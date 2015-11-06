@@ -124,8 +124,15 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
      courses.push(row) });
   query.on("end",function ( result){
      console.log(courses);
-     res.render("courseSelection", {courses:courses});
+     res.render("courseSelection", {courses:courses,depts:['CMPT','PHYS']});
 });
+});
+
+//JSON API to get data after the page has loaded, say a list of course numbers for a department the user selected.
+app.get('/api/' + 'courseNumbers', function (req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.send("{ \"courseNumbers\":  [ \"120L\", \"123L\", \"500L\" ]}");
+  res.end();
 });
 
 //Wireframe #12
