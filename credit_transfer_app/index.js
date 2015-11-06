@@ -18,7 +18,14 @@ var bodyParser = require('body-parser')
 app.use( bodyParser.json() );       
 app.use(bodyParser.urlencoded({    
   extended: true
-})); 
+}));
+
+var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
+var externalSchools = [];
+query.on("row", function (row, result) {
+    schools.push(row.schoolname);
+  });
+
 
 /*function wrapPage(pageBody){
 	pageTop = fs.readFileSync(path.join(__dirname, './html/wrapper') + '/top.html', 'utf-8');	
@@ -46,14 +53,8 @@ app.get(rootAppDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
-	var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
-	var schools = [];
-	query.on("row", function (row, result) {
-			schools.push(row.schoolname);
-		});
-
 	query.on("end", function (result) {
-			res.render("startPage", {schools:schools});
+			res.render("startPage", {schools:externalSchools});
 		});
 });
 
@@ -134,7 +135,7 @@ app.get(rootAppDirectory + '/courseEvaluation', function (req, res) {
 //Wireframe #10
 //Form allowing a user to request a course not found in our database.
 app.get(rootAppDirectory + '/requestCourse', function (req, res) {
-  res.render("requestCourse", {});
+  res.render("requestCourse", {schools:externalSchools});
 });
 
 //Wireframe #13
