@@ -5,12 +5,19 @@ block content
     br
     p
       | Select Courses that you have previously taken
-    br
-    form(action='/admission/transfer/credits/app/courseEvalutation',method='POST')
-        select(id='courses',name='courses')
+      br
+      form(action='/admission/transfer/credits/app/courseEvalutation',method='POST')
+        div(id='selectors')
+          select(id='courses',name='courses')
             each course in courses
-                option(value=course, selected=selected)= course
-        input(type='submit',value='Select Course')
+              option(value=course, selected=selected)= course
+              input(type='submit',value='Select Course')
+          select(onchange='getCourseNumbers()')
+            each department in depts
+              option= department
+          br
+        button#submit(type='submit') Submit Courses
+        a(href='/admission/transfer/credits/app/courseEvaluation') Submit
         br
         | Don't see a course? Submit a request 
         a(href='/admission/transfer/credits/app/requestCourse') here
