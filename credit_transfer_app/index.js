@@ -111,15 +111,15 @@ app.get(rootAppDirectory + '/changePasswordSuccess', function (req, res) {
 app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   var userSchool = req.body.schools;
   console.log(userSchool);
-  var courses = [];
+  var departments = [];
   var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "'";
-  var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
+ // var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
+  var queryString = "SELECT departmentName FROM Departments WHERE school =(" + subQueryString + ");";
   var query = client.query(queryString);
   query.on("row", function (row, result) {
-     courses.push(row.coursename) });
+     departments.push(row.departmentname) });
   query.on("end",function ( result){
-     console.log(courses);
-     res.render("courseSelection", {courses:courses,depts:['CMPT','PHYS']});
+     res.render("courseSelection", {depts:departments});
 });
 });
 
@@ -134,7 +134,7 @@ app.get('/api/' + 'courseNumbers', function (req, res) {
 //If user entered only a major and no courses, shows the required Marist courses for that major.
 //If user entered only courses and selected no major, shows their personal percentage completion for all Marist majors in order, based on courses entered.
 //If user entered both courses and selected a major, shows a credit evaluation for that particular major with those courses.
-app.get(rootAppDirectory + '/courseEvaluation', function (req, res) {
+app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
   res.render("courseEvaluation", {});
 });
 
