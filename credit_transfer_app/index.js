@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({
 var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
 var externalSchools = [];
 query.on("row", function (row, result) {
-    schools.push(row.schoolname);
+    externalSchools.push(row.schoolname);
   });
 
 
@@ -148,7 +148,7 @@ app.get(rootAppDirectory + '/requestCourse', function (req, res) {
 
 //Wireframe #13
 //Shows message indicating that the course was requested and an email will be sent when a decision has been reached.
-app.get(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
+app.post(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
   res.render("requestCourseConfirmation", {});
 });
 
