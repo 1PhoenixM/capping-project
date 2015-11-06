@@ -53,9 +53,7 @@ app.get(rootAppDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
-	query.on("end", function (result) {
-			res.render("startPage", {schools:externalSchools});
-		});
+  res.render("startPage", {schools:externalSchools});
 });
 
 
