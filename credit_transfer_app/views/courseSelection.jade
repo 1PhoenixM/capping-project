@@ -8,10 +8,6 @@ block content
       br
       form(action='/admission/transfer/credits/app/courseEvaluation',method='POST')
         div(id='selectors')
-          select(id='courses',name='courses')
-            each course in courses
-              option(value=course, selected=selected)= course
-              input(type='submit',value='Select Course')
           select(id='departments',onchange='getCourseNumbers()')
             each department in depts
               option= department
