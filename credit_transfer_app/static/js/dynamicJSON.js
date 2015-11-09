@@ -1,5 +1,6 @@
 function getCourseNumbers(){
-	$.getJSON( "/api/courseNumbers", function( data ) {
+	selectedDept = $('#departments').find(":selected").text();
+	$.getJSON( "/api/courseNumbers/" + selectedDept, function( data ) {
 	  var courses = [];
 	  courses = data.courseNumbers;
 	  var coursesDropdown = [];
@@ -8,9 +9,17 @@ function getCourseNumbers(){
 		coursesDropdown.push('<option>' + courses[i] + '</option>');
 	  }
 	 
-	  $( "<select/>", {
-		"class": "courseList",
-		html: coursesDropdown.join( "" )
-	  }).appendTo( "#selectors" );
+	  if($('#courseSelector').length == 0){
+		  $( "<select/>", {
+			"id": "courseSelector",
+			"style": "display:inline",
+			html: coursesDropdown.join( "" )
+		  }).appendTo( "#selectors" );
+	  }
+	  
+	  else{
+		$('#courseSelector').html(coursesDropdown.join( "" ));
+	  }
+	  
 	});
 }

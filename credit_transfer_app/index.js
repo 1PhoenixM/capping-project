@@ -124,7 +124,7 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
 });
 
 //JSON API to get data after the page has loaded, say a list of course numbers for a department the user selected.
-app.get('/api/' + 'courseNumbers', function (req, res) {
+app.get('/api/' + 'courseNumbers/:dept', function (req, res) {
   res.setHeader("Content-Type", "application/json");
   res.send("{ \"courseNumbers\":  [ \"120L\", \"123L\", \"500L\" ]}");
   res.end();
