@@ -1,4 +1,5 @@
 var express = require('express');
+var session = require('express-session');
 var app = express();
 var fs = require('fs');
 var path = require('path');
@@ -18,6 +19,16 @@ var bodyParser = require('body-parser')
 app.use( bodyParser.json() );       
 app.use(bodyParser.urlencoded({    
   extended: true
+}));
+
+//app.use(express.cookieParser());
+app.use(session({
+  genid: function(req){
+    return  require('crypto').randomBytes(48).toString('hex');
+},
+  secret: 'sayanouta',
+  resave: true,
+  saveUninitialized: true,
 }));
 
 var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
@@ -76,6 +87,12 @@ app.get(rootAppDirectory + '/login', function (req, res) {
   res.render("login", {});
 });
 
+app.post(rootAppDirectory + '/loginAction', function (req, res){
+  var username = req.body.username;
+  var hashedPass = req.body.pass;
+  res.render("main", {}); 
+});
+
 //Wireframe #4
 //The "forgot password" page allowing an email to be sent to the user.
 app.get(rootAppDirectory + '/forgotPassword', function (req, res) {
@@ -112,6 +129,7 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   var userSchool = req.body.schools;
   console.log(userSchool);
   var departments = [];
+  var majors = [];
   var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "'";
  // var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
   var queryString = "SELECT departmentName FROM Departments WHERE school =(" + subQueryString + ");";
@@ -119,15 +137,26 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   query.on("row", function (row, result) {
      departments.push(row.departmentname) });
   query.on("end",function ( result){
-     res.render("courseSelection", {depts:departments});
+     res.render("courseSelection", {depts:departments,school:userSchool});
 });
 });
 
 //JSON API to get data after the page has loaded, say a list of course numbers for a department the user selected.
-app.get('/api/' + 'courseNumbers/:dept', function (req, res) {
+app.get('/api/' + 'courseNumbers/:dept/:school', function (req, res) {
+  var dept = req.params.dept;
+  var school = req.params.school;
+  var courseNumbers = "";
+  var secondsub = "(SELECT SID FROM Schools WHERE schoolname = '" + school + "')";
+  var subquery = "(SELECT DID FROM Departments WHERE departmentName = '" + dept + "' AND school = " + secondsub + ")";
+  var queryString = "SELECT courseNumber FROM courses WHERE DID = " + subquery +  ";";
   res.setHeader("Content-Type", "application/json");
-  res.send("{ \"courseNumbers\":  [ \"120L\", \"123L\", \"500L\" ]}");
-  res.end();
+  var query = client.query(queryString);
+  query.on("row", function (row, result) {
+     courseNumbers += "\"" + row.departmentname + "\"," });
+  query.on("end",function ( result){
+    res.send("{ \"courseNumbers\":  [  " + courseNumbers + " ]}");
+    res.end();
+});
 });
 
 //Wireframe #12

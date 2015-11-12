@@ -8,7 +8,7 @@ block content
       br
       form(action='/admission/transfer/credits/app/courseEvaluation',method='POST')
         div(id='selectors')
-          select(id='departments',onchange='getCourseNumbers()')
+          select(id='departments',onchange='getCourseNumbers("#{school}")')
             each department in depts
               option= department
           br

@@ -1,6 +1,6 @@
-function getCourseNumbers(){
+function getCourseNumbers(school){
 	selectedDept = $('#departments').find(":selected").text();
-	$.getJSON( "/api/courseNumbers/" + selectedDept, function( data ) {
+	$.getJSON( "/api/courseNumbers/" + selectedDept + "/" + school, function( data ) {
 	  var courses = [];
 	  courses = data.courseNumbers;
 	  var coursesDropdown = [];

@@ -2,13 +2,14 @@ extends ./wrapper.jade
 
 block content
     h2 Login
-    form
+    form(action='/admission/transfer/credits/app/loginAction',method='POST')
       | E-mail Address: 
       input(type='text', name='emailAddress')
       br
       | Password: 
       input(type='password', name='password')
-      submit Login
+      br
+      input(type='submit',value='Login')
     br
     a(href='/admission/transfer/credits/app/forgotPassword') Forgot Password
     br
