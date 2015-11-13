@@ -2,13 +2,19 @@ extends ./wrapper.jade
 
 block content
     h2 Login
-    form(action='/admission/transfer/credits/app/loginAction',method='POST')
+    form(name = 'login', action='/admission/transfer/credits/app/loginAction',method='POST' onSubmit = 'return encode()')
       | E-mail Address: 
       input(type='text', name='emailAddress')
       br
       | Password: 
       input(type='password', name='password')
       br
+      script(src='http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js')
+      script.
+        function encode(){
+        document.login.password.value = CryptoJS.SHA256(document.login.password.value);
+        return true;      
+        }
       input(type='submit',value='Login')
     br
     a(href='/admission/transfer/credits/app/forgotPassword') Forgot Password

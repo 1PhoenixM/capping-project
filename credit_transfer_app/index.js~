@@ -4,7 +4,6 @@ var app = express();
 var fs = require('fs');
 var path = require('path');
 var pg = require("pg");
-var crypto = require('crypto');
 var rootDirectory = '/admission/transfer/credits';
 var rootAppDirectory = '/admission/transfer/credits/app';
 var conString = "pg://postgres:Candi7@localhost:5432/credit_transfer";
@@ -25,9 +24,8 @@ app.use(bodyParser.urlencoded({
 //app.use(express.cookieParser());
 app.use(session({
   genid: function(req){
-    return  crypto.randomBytes(48).toString('hex');
+    return  require('crypto').randomBytes(48).toString('hex');
 },
-  user: '',
   secret: 'sayanouta',
   resave: true,
   saveUninitialized: true,
@@ -83,7 +81,7 @@ app.get(rootAppDirectory + '/createAccountSuccess', function (req, res) {
   res.render("createAccountSuccess", {});
 });
 
-//Wireframe #3:
+//Wireframe #3
 //The user account login page, not usable by employees.
 app.get(rootAppDirectory + '/login', function (req, res) {
   res.render("login", {});
@@ -91,15 +89,8 @@ app.get(rootAppDirectory + '/login', function (req, res) {
 
 app.post(rootAppDirectory + '/loginAction', function (req, res){
   var username = req.body.username;
-  var hashedPass = req.body.password;
-  var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
-  var query = client.query(" SELECT emailaddress FROM people WHERE emailaddress = '" + username + "' AND password = '" + doubleHashPass + "' LIMIT 1;");
-  query.on("row",function(row,result){
-   req.session.user = row;   
-});
-  query.on("end", function(row,result){
+  var hashedPass = req.body.pass;
   res.render("main", {}); 
-});
 });
 
 //Wireframe #4
@@ -164,23 +155,6 @@ app.get('/api/' + 'courseNumbers/:dept/:school', function (req, res) {
      courseNumbers += "\"" + row.departmentname + "\"," });
   query.on("end",function ( result){
     res.send("{ \"courseNumbers\":  [  " + courseNumbers + " ]}");
-    res.end();
-});
-});
-
-app.get('/api/' + 'departments/:school', function (req, res) {
-  var school = req.params.school;
-  var depts = "";
-  var secondsub = "(SELECT SID FROM Schools WHERE schoolname = '" + school + "')";
-  var queryString = "(SELECT departmentName FROM Departments WHERE school = " + secondsub + ")";
-  res.setHeader("Content-Type", "application/json");
-  var query = client.query(queryString);
-  query.on("row", function (row, result) {
-     depts += "\"" + row.departmentname + "\", ";
-  });
-  query.on("end",function ( result){
-    depts = depts.substring(0, depts.length-2);
-    res.send("{ \"departments\":  [  " + depts + " ]}");
     res.end();
 });
 });

@@ -15,16 +15,12 @@ function getCourseNumbers(school){
 			"style": "display:inline",
 			html: coursesDropdown.join( "" )
 		  }).appendTo( "#selectors" );
-		  $( "<button/>", {
+		  $( "<a/>", {
 			"id": "plus",
-			"type": "button",
-			"class": "pluses",
+			"onclick": "addNewLine('" + school "')",
 			"style": "display:inline",
-			html: "  +"
-		  }).appendTo( "#selectors" );
-		  $("#plus").bind("click", function(){
-			addNewLine(school);
-		  });
+			html: "+"
+		  }).after( "#courseSelector" );
 	  }
 	  
 	  else{
@@ -34,7 +30,6 @@ function getCourseNumbers(school){
 	});
 }
 
-//$('#plus').click(
 function addNewLine(school){
 	$.getJSON( "/api/departments/" + school, function( data ) {
 	  var depts  =[];
@@ -42,7 +37,7 @@ function addNewLine(school){
 	  var deptDropdown = [];
 
 	  for(var i = 0; i < depts.length; i++){
-		deptDropdown.push('<option>' + depts[i] + '</option>');
+		deptsDropdown.push('<option>' + depts[i] + '</option>');
 	  }
 
 		$( "<select/>", {
@@ -53,12 +48,10 @@ function addNewLine(school){
 
 	        getCourseNumbers(school);
 
-		$( "<button/>", {
+		$( "<a/>", {
 			"value": "2",
-			"class": "pluses",
-			"type": "button",
 			"style": "display:inline",
-			html: "  +"
+			html: "+"
 		  }).appendTo( "#selectors" );
 
 		$( "<br/>", {
