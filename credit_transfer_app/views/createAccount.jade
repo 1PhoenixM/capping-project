@@ -3,36 +3,36 @@ extends ./wrapper.jade
 block content
     h2 Create Account
     p
-      | To create an account, fill in the following details. Only an e-mail address and password are required to create an account.
-    form(method='post', action='/admission/transfer/credits/app/createAccount')
-      | E-mail Address: 
-      input(type='text', name='emailAddress')
-      br
-      | Password: 
-      input(type='password', name='password')
-      br
-      | Confirm Password: 
-      input(type='password', name='confirmPassword')
-      br
-      hr
-      | Optional:
-      | First Name: 
-      input(type='text', name='firstName')
-      br
-      | Last Name: 
-      input(type='text', name='lastName')
-      br
-      | Address Line 1: 
-      input(type='text', name='address1')
-      br
-      | Address Line 2: 
-      input(type='text', name='address2')
-      br
-      | State: 
-      select(name='state')
-      br
-      | School: 
-      select(name='school')
-      // Should autopopulate this field based on what was selected at /start
-      br
-      input#submit(type='submit', value='Create')
+      form(name = 'createAccount', action='/admission/transfer/credits/app/createAccountAction',method='POST' onSubmit = 'return encode()')
+        | E-mail Address: 
+        input(type='text', name='emailAddress', align='right')
+        br
+        | Password: 
+        input(type='password', name='password', align='right')
+        br
+        | Confirm Password: 
+        input(type='password', name='confirmPassword', align='right')
+        br
+        | School: 
+        select(id='schools',name='schools')
+            each school in schools
+                option(value=school, selected=selected)= school
+        br
+        | First Name: 
+        input(type='text', name='firstName', align='right')
+        br
+        | Last Name: 
+        input(type='text', name='lastName', align='right')
+        br
+        | State: 
+        input(type='text', name='state', align='right')
+        br
+        script(src='http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js')
+        script.
+          function encode(){
+            if (document.createAccount.password.value.equals(document.createAccount.confirmPassword.value)) {
+              document.createAccount.password.value = CryptoJS.SHA256(document.createAccount.password.value);
+            }
+          }
+        input(type='submit',value='Create Account')
+    a(href='/admission/transfer/credits/app/login') Already have an account?

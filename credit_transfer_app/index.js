@@ -74,9 +74,36 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 //The user account creation form. Can pass in query parameters here via the req variable, to handle form errors.
 //Redirect user here if account creation fails.
 app.get(rootAppDirectory + '/createAccount', function (req, res) {
-  res.render("createAccount", {});
+  res.render("createAccount", {schools:externalSchools});
 });
 
+app.post(rootAppDirectory + '/createAccountAction', function ( req, res) {
+  var email = req.body.emailAddress;
+  console.log(email);
+  var hashedPass = req.body.password;
+  var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
+  //Optional vars
+  var firstName = req.body.firstName;
+  var lastName = req.body.lastName;
+  //var addressLine1 = req.body.addressLine1;
+  //var addressLine2 = req.body.addressLine2;
+  var state = req.body.state;
+  var school = req.body.school;
+
+  var schoolQueryString = "SELECT SID from SCHOOLS WHERE schoolname = '" + school + "' LIMIT 1;";
+  var query = client.query(schoolQueryString); 
+  query.on("row", function(row,result){
+    schoolID = row.SID;
+  });
+  client.query('INSERT INTO people (emailAddress, password, firstname, lastname, state) VALUES ($1, $2, $3, $4, $5);',
+    [email,doubleHashPass,firstName,lastName,state],
+    function(err,result) {
+      if(err) {
+        console.log(err);
+  }});
+  res.render("createAccountSuccess", {});
+});
+ 
 //(no wireframe)
 //Shows message indicating user account was successfully created and contains link to /main
 app.get(rootAppDirectory + '/createAccountSuccess', function (req, res) {
