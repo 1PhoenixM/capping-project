@@ -30,7 +30,7 @@ block content
         script(src='http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js')
         script.
           function encode(){
-            if (document.createAccount.password.value.equals(document.createAccount.confirmPassword.value)) {
+            if (document.createAccount.password.value == document.createAccount.confirmPassword.value) {
               document.createAccount.password.value = CryptoJS.SHA256(document.createAccount.password.value);
             }
           }

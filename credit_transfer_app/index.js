@@ -66,7 +66,10 @@ app.get(rootAppDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
-  res.render("startPage", {schools:externalSchools});
+  if (req.session.user != null)
+    res.render("startPage", {schools:externalSchools, user:req.session.user});
+  else
+    res.render("startPage", {schools:externalSchools}); 
 });
 
 
@@ -79,7 +82,6 @@ app.get(rootAppDirectory + '/createAccount', function (req, res) {
 
 app.post(rootAppDirectory + '/createAccountAction', function ( req, res) {
   var email = req.body.emailAddress;
-  console.log(email);
   var hashedPass = req.body.password;
   var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
   //Optional vars
@@ -117,17 +119,35 @@ app.get(rootAppDirectory + '/login', function (req, res) {
 });
 
 app.post(rootAppDirectory + '/loginAction', function (req, res){
-  var username = req.body.username;
+  var email = req.body.emailAddress;
   var hashedPass = req.body.password;
   var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
-  var query = client.query(" SELECT emailaddress FROM people WHERE emailaddress = '" + username + "' AND password = '" + doubleHashPass + "' LIMIT 1;");
+  var queryString = "SELECT emailaddress FROM people WHERE emailaddress = '" + email + "' AND password = '" + doubleHashPass + "' LIMIT 1;"
+  var query = client.query(queryString);
   query.on("row",function(row,result){
+   console.log(row);
    req.session.user = row;   
 });
   query.on("end", function(row,result){
+  if (req.session.user){
   res.render("main", {}); 
+  } else{
+  res.render("accessDenied", {});
+ }
 });
 });
+
+app.post(rootAppDirectory + '/changePasswordAction', function ( req, res){
+  
+  var hashedPass = req.body.newPassword;
+  var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
+  var queryString = "UPDATE people SET password = '" + doubleHashPass + "' WHERE emailAddress ='" + req.session.user + "';";
+  var query = client.query(queryString);
+  query.on("end", function(row,result){
+    res.render("changePasswordSuccess", {});     
+  });
+});
+
 
 //Wireframe #4
 //The "forgot password" page allowing an email to be sent to the user.
@@ -182,14 +202,16 @@ app.get('/api/' + 'courseNumbers/:dept/:school', function (req, res) {
   var dept = req.params.dept;
   var school = req.params.school;
   var courseNumbers = "";
-  var secondsub = "(SELECT SID FROM Schools WHERE schoolname = '" + school + "')";
+  var secondsub = "(SELECT SID FROM Schools WHERE schoolName = '" + school + "')";
   var subquery = "(SELECT DID FROM Departments WHERE departmentName = '" + dept + "' AND school = " + secondsub + ")";
-  var queryString = "SELECT courseNumber FROM courses WHERE DID = " + subquery +  ";";
+  var queryString = "SELECT courseNumber FROM Courses WHERE DID = " + subquery +  ";";
   res.setHeader("Content-Type", "application/json");
   var query = client.query(queryString);
   query.on("row", function (row, result) {
-     courseNumbers += "\"" + row.departmentname + "\"," });
+     courseNumbers += "\"" + row.coursenumber + "\", ";
+  });
   query.on("end",function ( result){
+    courseNumbers = courseNumbers.substring(0,courseNumbers.length-2);
     res.send("{ \"courseNumbers\":  [  " + courseNumbers + " ]}");
     res.end();
 });
@@ -217,7 +239,13 @@ app.get('/api/' + 'departments/:school', function (req, res) {
 //If user entered only courses and selected no major, shows their personal percentage completion for all Marist majors in order, based on courses entered.
 //If user entered both courses and selected a major, shows a credit evaluation for that particular major with those courses.
 app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
-  res.render("courseEvaluation", {});
+    console.log(req.body);
+    //query = 'SELECT c.maristNumber FROM CourseEquivalencies c, CoursesToMajors m WHERE c.maristNumber = m.courseNumber AND';
+    //query += ' c.maristDID = m.DID';
+    //query += 'AND m.majorName = req.body.major';
+    //query += " AND c.externalNumber = '" + req.body.course1[1] + "'";
+    //query += " AND c.externalDID = (SELECT DID FROM Departments WHERE departmentName = '" + req.body.dept1 + "'";
+    res.render("courseEvaluation", {});
 });
 
 //Wireframe #10

@@ -26,6 +26,7 @@ function getCourseNumbers(school){
 		  $( "<select/>", {
 			"id": "courseSelector",
 			"style": "display:inline",
+			"name": "course1",
 			html: coursesDropdown.join( "" )
 		  }).appendTo( "#selectors" );
 
@@ -69,10 +70,13 @@ function addNewLine(school){
 		deptDropdown.push('<option>' + depts[i] + '</option>');
 	  }
 	
+		var count = $('.deptSelector').length;
+
 		//Create department dropdown
 		$( "<select/>", {
 			"class": "deptSelector",
 			"style": "display:inline",
+			"name": "course" + count,
 			html: deptDropdown.join( "" )
 		  }).appendTo( "#selectors" );
 
