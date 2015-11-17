@@ -179,7 +179,13 @@ html.gecko.ff3.win.js(lang='en')
           aside#body-relatedinfo
             hr
             .floatleft
-            
+            if user
+              a(href='/admission/transfer/credits/app/logout') Logout    
+            else
+              br 
+              a(href='/admission/transfer/credits/app/login') Login
+              br
+              a(href='/admission/transfer/credits/app/createAccount') Create Account
             block content
             
     footer#footer-content.grid-container.grid-parent

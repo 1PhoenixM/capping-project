@@ -75,10 +75,15 @@ function addNewLine(school){
 		//Create department dropdown
 		$( "<select/>", {
 			"class": "deptSelector",
+			"id": "dept",
 			"style": "display:inline",
 			"name": "course" + count,
 			html: deptDropdown.join( "" )
 		  }).appendTo( "#selectors" );
+	
+		$(".deptSelector").bind("change", function(){
+			getCourseNumbers(school);			
+		});
 
 		//Create course number dropdown
 	        getCourseNumbers(school);

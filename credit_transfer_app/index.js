@@ -39,7 +39,6 @@ query.on("row", function (row, result) {
     externalSchools.push(row.schoolname);
   });
 
-
 /*function wrapPage(pageBody){
 	pageTop = fs.readFileSync(path.join(__dirname, './html/wrapper') + '/top.html', 'utf-8');	
 	pageBottom = fs.readFileSync(path.join(__dirname, './html/wrapper') + '/bottom.html', 'utf-8');	
@@ -66,10 +65,7 @@ app.get(rootAppDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
-  if (req.session.user != null)
-    res.render("startPage", {schools:externalSchools, user:req.session.user});
-  else
-    res.render("startPage", {schools:externalSchools}); 
+    res.render("startPage", {schools:externalSchools});
 });
 
 
@@ -125,14 +121,14 @@ app.post(rootAppDirectory + '/loginAction', function (req, res){
   var queryString = "SELECT emailaddress FROM people WHERE emailaddress = '" + email + "' AND password = '" + doubleHashPass + "' LIMIT 1;"
   var query = client.query(queryString);
   query.on("row",function(row,result){
-   console.log(row);
-   req.session.user = row;   
+   req.session.user = row;
+   app.locals.user = row;   
 });
   query.on("end", function(row,result){
   if (req.session.user){
-  res.render("main", {}); 
+  res.redirect(rootAppDirectory + '/main'); 
   } else{
-  res.render("accessDenied", {});
+    res.redirect(rootAppDirectory + '/accessDenied'); 
  }
 });
 });
@@ -176,24 +172,23 @@ app.get(rootAppDirectory + '/changePassword', function (req, res) {
 //Wireframe #8
 //Shows message indicating that password was successfully changed.
 app.get(rootAppDirectory + '/changePasswordSuccess', function (req, res) {
-  res.render("changePasswordSuccess", {});
+  res.render("changePasswordSuccess", {user:req.session.user});
 });
 
 //Wireframe #11
 //Allows user to select courses and update their existing course list.
 app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   var userSchool = req.body.schools;
-  console.log(userSchool);
   var departments = [];
   var majors = [];
-  var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "'";
+  var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "' LIMIT 1";
  // var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
   var queryString = "SELECT departmentName FROM Departments WHERE school =(" + subQueryString + ");";
   var query = client.query(queryString);
   query.on("row", function (row, result) {
      departments.push(row.departmentname) });
   query.on("end",function ( result){
-     res.render("courseSelection", {depts:departments,school:userSchool});
+     res.render("courseSelection", {depts:departments,school:userSchool,user:req.session.user});
 });
 });
 
@@ -251,7 +246,7 @@ app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
 //Wireframe #10
 //Form allowing a user to request a course not found in our database.
 app.get(rootAppDirectory + '/requestCourse', function (req, res) {
-  res.render("requestCourse", {schools:externalSchools});
+  res.render("requestCourse", {schools:externalSchools,user:req.session.user});
 });
 
 //Wireframe #13
@@ -262,9 +257,14 @@ app.post(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
 
 //To be added: Administrator action pages for Admissions/Registrar to alter the database.
 
-//Route to post the account data to (accessed as an object)
-app.post(rootAppDirectory + '/createAccount', function (req, res){
-	console.log(req.body);
+app.get(rootAppDirectory + '/accessDenied', function (req, res) {
+  res.render("accessDenied", {});
+});
+
+app.get(rootAppDirectory + '/logout', function (req, res) {
+  req.session.user = null;
+  app.locals.user = null;
+  res.render("logout", {});
 });
 
 app.use(function(req, res, next) {
