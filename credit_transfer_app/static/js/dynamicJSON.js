@@ -1,8 +1,8 @@
 //Given a school and a department, gets all its course numbers and renders a dropdown
 //Accepts a school name as a string
-function getCourseNumbers(school){
+function getCourseNumbers(school,forLine){
 	//First get department chosen by the user.
-	selectedDept = $('#departments').find(":selected").text();
+	selectedDept = $('#dept' + forLine).val(); //.find(":selected").text();
 
 	//Make a call to the JSON API providing both department and school
 	$.getJSON( "/api/courseNumbers/" + selectedDept + "/" + school, function( data ) {
@@ -20,15 +20,15 @@ function getCourseNumbers(school){
 	  }
 	 
 	  //If the course selector does not exist...
-	  if($('#courseSelector').length == 0){
+	  if($('#courseSelector' + forLine).length == 0){
 
 		  //Create the course dropdown
 		  $( "<select/>", {
-			"id": "courseSelector",
+			"id": "courseSelector" + forLine,
 			"style": "display:inline",
-			"name": "course1",
+			"name": "course" + forLine,
 			html: coursesDropdown.join( "" )
-		  }).appendTo( "#selectors" );
+		  }).insertAfter( "#dept"+forLine );
 
 		  //Create a new line button
 		  $( "<button/>", {
@@ -37,18 +37,18 @@ function getCourseNumbers(school){
 			"class": "pluses",
 			"style": "display:inline",
 			html: "+"
-		  }).appendTo( "#selectors" );
+		  }).insertAfter( "#courseSelector"+forLine );
 	
 		  //Bind the new line event to the button
 		  $("#plus").bind("click", function(){
-			addNewLine(school);
+			addNewLine(school,forLine+1);
 		  });
 	  }
 	  
 	  //If course selector already exists, i.e. user just chose a new department,
 	  else{
 		//Update existing course dropdown with new values.
-		$('#courseSelector').html(coursesDropdown.join( "" ));
+		$('#courseSelector' + forLine).html(coursesDropdown.join( "" ));
 	  }
 	  
 	});
@@ -75,18 +75,18 @@ function addNewLine(school){
 		//Create department dropdown
 		$( "<select/>", {
 			"class": "deptSelector",
-			"id": "dept",
+			"id": "dept" + count,
 			"style": "display:inline",
 			"name": "course" + count,
 			html: deptDropdown.join( "" )
 		  }).appendTo( "#selectors" );
 	
 		$(".deptSelector").bind("change", function(){
-			getCourseNumbers(school);			
+			getCourseNumbers(school,count);			
 		});
 
 		//Create course number dropdown
-	        getCourseNumbers(school);
+	        //getCourseNumbers(school,count);
 
 		//Remove the old new line button
 		$('#plus').remove();

@@ -28,6 +28,7 @@ app.use(session({
     return  crypto.randomBytes(48).toString('hex');
 },
   user: '',
+  clearance: 0,
   secret: 'sayanouta',
   resave: true,
   saveUninitialized: true,
@@ -49,23 +50,23 @@ query.on("row", function (row, result) {
 app.get('/', function (req, res) {
   /*pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/credits.html', 'utf-8'));	
   res.send(pageBody);*/
-  res.render("credits", {});
+  res.render("credits", {user:req.session.user});
 });
 
 //Wireframe #1
 //At current Marist /admission/transfer/credits page, contains a link to the app.
 app.get(rootDirectory, function (req, res) {
-  res.render("credits", {});
+  res.render("credits", {user:req.session.user});
 });
 
 app.get(rootAppDirectory, function (req, res) {
-  res.render("startPage", {test:[]});
+  res.render("startPage", {user:req.session.user});
 });
 
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
-    res.render("startPage", {schools:externalSchools});
+    res.render("startPage", {schools:externalSchools, user:req.session.user});
 });
 
 
@@ -73,7 +74,11 @@ app.get(rootAppDirectory + '/start', function (req, res) {
 //The user account creation form. Can pass in query parameters here via the req variable, to handle form errors.
 //Redirect user here if account creation fails.
 app.get(rootAppDirectory + '/createAccount', function (req, res) {
-  res.render("createAccount", {schools:externalSchools});
+  if (req.session.user){
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+  }else{
+    res.render("createAccount", {schools:externalSchools});
+  }
 });
 
 app.post(rootAppDirectory + '/createAccountAction', function ( req, res) {
@@ -111,36 +116,47 @@ app.get(rootAppDirectory + '/createAccountSuccess', function (req, res) {
 //Wireframe #3:
 //The user account login page, not usable by employees.
 app.get(rootAppDirectory + '/login', function (req, res) {
-  res.render("login", {});
+  if (req.session.user){
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+  }else{
+    res.render("login", {});
+  }
 });
 
 app.post(rootAppDirectory + '/loginAction', function (req, res){
   var email = req.body.emailAddress;
   var hashedPass = req.body.password;
   var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
-  var queryString = "SELECT emailaddress FROM people WHERE emailaddress = '" + email + "' AND password = '" + doubleHashPass + "' LIMIT 1;"
+  var queryString = "SELECT emailaddress, pid  FROM people WHERE emailaddress = '" + email + "' AND password = '" + doubleHashPass + "' LIMIT 1;";
   var query = client.query(queryString);
+  var pid = -1;
   query.on("row",function(row,result){
-   req.session.user = row;
-   app.locals.user = row;   
-});
+    req.session.user = row.emailaddress;
+    pid  = row.pid
+  });
   query.on("end", function(row,result){
-  if (req.session.user){
-  res.redirect(rootAppDirectory + '/main'); 
-  } else{
-    res.redirect(rootAppDirectory + '/accessDenied'); 
- }
-});
+     var clearanceQueryString = "SELECT clearance FROM employees WHERE eid = " + pid + ";";
+     var clearanceQuery = client.query(clearanceQueryString);
+     clearanceQuery.on("row",function(row,result){
+       req.session.clearance = row.clearance;
+     });
+     clearanceQuery.on("end", function(row,result){
+       if (req.session.user){
+         res.redirect(rootAppDirectory + '/main'); 
+       }else{
+         res.redirect(rootAppDirectory + '/accessDenied'); 
+       }
+    });
+  }); 
 });
 
 app.post(rootAppDirectory + '/changePasswordAction', function ( req, res){
-  
   var hashedPass = req.body.newPassword;
   var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
   var queryString = "UPDATE people SET password = '" + doubleHashPass + "' WHERE emailAddress ='" + req.session.user + "';";
   var query = client.query(queryString);
   query.on("end", function(row,result){
-    res.render("changePasswordSuccess", {});     
+    res.render("changePasswordSuccess", {user:req.session.user});     
   });
 });
 
@@ -148,31 +164,51 @@ app.post(rootAppDirectory + '/changePasswordAction', function ( req, res){
 //Wireframe #4
 //The "forgot password" page allowing an email to be sent to the user.
 app.get(rootAppDirectory + '/forgotPassword', function (req, res) {
-  res.render("forgotPassword", {});
+  if (req.session.user){ 
+    res.render("forgotPassword", {user:req.session.user});
+ } else{
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+ }
 });
 
 //Wireframe #5
 //Shows message indicating that a password recovery email was successfully sent.
 app.get(rootAppDirectory + '/forgotPasswordEmailSent', function (req, res) {
-  res.render("forgotPasswordEmailSent", {});
+  if(req.session.user){
+    res.render("forgotPasswordEmailSent", {user:req.session.user});
+  }else{
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+ }
 });
 
 //Wireframe #6
 //The main menu for registered users.
 app.get(rootAppDirectory + '/main', function (req, res) {
-  res.render("main", {});
+  if(req.session.user){ 
+    res.render("main", {user:req.session.user, clearance:req.session.clearance});
+  }else{
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+ }
 });
 
 //Wireframe #7
 //Page allowing user to change their password.
 app.get(rootAppDirectory + '/changePassword', function (req, res) {
-  res.render("changePassword", {});
+  if(req.session.user){
+    res.render("changePassword", {user:req.session.user});
+  }else{
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+ }
 });
 
 //Wireframe #8
 //Shows message indicating that password was successfully changed.
 app.get(rootAppDirectory + '/changePasswordSuccess', function (req, res) {
-  res.render("changePasswordSuccess", {user:req.session.user});
+  if(req.session.user){  
+    res.render("changePasswordSuccess", {user:req.session.user});
+  }else{
+    res.redirect(rootAppDirectory + '/accessDenied'); 
+ }
 });
 
 //Wireframe #11
@@ -235,12 +271,19 @@ app.get('/api/' + 'departments/:school', function (req, res) {
 //If user entered both courses and selected a major, shows a credit evaluation for that particular major with those courses.
 app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
     console.log(req.body);
+    query = "";
+    var userCourses = req.body;
+	for(course in userCourses){
+	 courseDept = course[0];
+	 courseNumber = course[1];
+	 query += "OR (c.DID = " + courseDept + " AND c.courseNumber ='" + courseNumber + "')";
+	}
     //query = 'SELECT c.maristNumber FROM CourseEquivalencies c, CoursesToMajors m WHERE c.maristNumber = m.courseNumber AND';
     //query += ' c.maristDID = m.DID';
     //query += 'AND m.majorName = req.body.major';
     //query += " AND c.externalNumber = '" + req.body.course1[1] + "'";
     //query += " AND c.externalDID = (SELECT DID FROM Departments WHERE departmentName = '" + req.body.dept1 + "'";
-    res.render("courseEvaluation", {});
+    res.render("courseEvaluation", {user:req.session.user});
 });
 
 //Wireframe #10
@@ -252,23 +295,45 @@ app.get(rootAppDirectory + '/requestCourse', function (req, res) {
 //Wireframe #13
 //Shows message indicating that the course was requested and an email will be sent when a decision has been reached.
 app.post(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
-  res.render("requestCourseConfirmation", {});
+  res.render("requestCourseConfirmation", {user:req.session.user});
 });
 
 //To be added: Administrator action pages for Admissions/Registrar to alter the database.
+app.get(rootAppDirectory + '/addCourse', function(req,res) {
+  if (req.session.clearance > 1){
+    res.render("addCourse",{user:req.session.user, schools:externalSchools});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/addUser', function(req,res) {
+   if (req.session.clearance > 2){
+    res.render("addUser",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied", {})
+}});
+
+app.get(rootAppDirectory + '/addSchool', function(req,res) {
+ if (req.session.clearance > 2){
+    res.render("addSchool",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied", {})
+}});
+
 
 app.get(rootAppDirectory + '/accessDenied', function (req, res) {
-  res.render("accessDenied", {});
+  res.render("accessDenied", {user:req.session.user});
 });
 
 app.get(rootAppDirectory + '/logout', function (req, res) {
   req.session.user = null;
+  req.session.clearance = 0;
   app.locals.user = null;
   res.render("logout", {});
 });
 
 app.use(function(req, res, next) {
-    res.render("404", {});
+    res.render("404", {user:req.session.user});
 });
 
 var server = app.listen(8080, function () {

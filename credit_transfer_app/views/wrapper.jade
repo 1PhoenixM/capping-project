@@ -180,12 +180,15 @@ html.gecko.ff3.win.js(lang='en')
             hr
             .floatleft
             if user
-              a(href='/admission/transfer/credits/app/logout') Logout    
+              .floatright
+                a(href='/admission/transfer/credits/app/logout') Logout    
             else
-              br 
-              a(href='/admission/transfer/credits/app/login') Login
-              br
-              a(href='/admission/transfer/credits/app/createAccount') Create Account
+              .floatright
+                br 
+                a(href='/admission/transfer/credits/app/login') Login
+                br
+                a(href='/admission/transfer/credits/app/createAccount') Create Account
+                br 
             block content
             
     footer#footer-content.grid-container.grid-parent

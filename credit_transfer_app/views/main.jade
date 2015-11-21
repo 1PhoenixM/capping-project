@@ -8,3 +8,13 @@ block content
     a(href='/admission/transfer/credits/app/start') Create New Course Selection
     br
     a(href='/admission/transfer/credits/app/changePassword') Change Password
+    br    
+    if clearance >= 1
+      a(href='/admission/transfer/credits/app/addCourse') Add Course
+      br
+    if  clearance >= 2
+      a(href='/admission/transfer/credits/app/addSchool') Add School
+      br
+      a(href='/admission/transfer/credits/app/addUser') Add User
+      br
+       

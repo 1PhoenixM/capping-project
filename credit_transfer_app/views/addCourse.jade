@@ -1,0 +1,22 @@
+extends ./wrapper.jade
+
+block content
+    h2 404 Add Course
+    br
+    form(name = 'addCourse', action='/admission/transfer/credits/app/createAccountAction',method='POST')
+        | Course Number:
+        input(type='text', name='CourseNumber', align='right')
+        br
+        | Credits:
+        input(type='text', name='credits', align='right')
+        br
+        | Description:
+        input(type='textarea', name='Description', align='right')
+        br
+        | School: 
+        select(id='schools',name='schools')
+            each school in schools
+                option(value=school, selected=selected)= school
+        br
+        input(type='submit',value='Add Course')
+ 

@@ -1,0 +1,31 @@
+extends ./wrapper.jade
+
+block content
+    h2 Create Account
+    p
+      form(name = 'createAccount', action='/admission/transfer/credits/app/createAccountAction',method='POST')
+        | School Name: 
+        input(type='text', name='emailAddress', align='right')
+        br
+        | Country: 
+        input(type='password', name='password', align='right')
+        br
+        | Address 1: 
+        input(type='password', name='confirmPassword', align='right')
+        br
+        | Address 2: 
+        input(type='password', name='confirmPassword', align='right')
+        br
+        | City : 
+        input(type='text', name='firstName', align='right')
+        br
+        | State : 
+        input(type='text', name='lastName', align='right')
+        br
+        | Zip : 
+        input(type='text', name='state', align='right')
+        br
+        | Departments :
+        input(type='test', name='deparments', align='right')
+        br
+        input(type='submit',value='Add School')
