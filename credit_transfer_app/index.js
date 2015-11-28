@@ -127,7 +127,7 @@ app.post(rootAppDirectory + '/loginAction', function (req, res){
   var email = req.body.emailAddress;
   var hashedPass = req.body.password;
   var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
-  var queryString = "SELECT emailaddress, pid  FROM people WHERE emailaddress = '" + email + "' AND password = '" + doubleHashPass + "' LIMIT 1;";
+  var queryString = "SELECT emailaddress, pid  FROM people WHERE UPPER(emailaddress) = UPPER('" + email + "') AND password = '" + doubleHashPass + "' LIMIT 1;";
   var query = client.query(queryString);
   var pid = -1;
   query.on("row",function(row,result){
@@ -219,7 +219,7 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   var majors = [];
   var subQueryString = "SELECT SID FROM Schools WHERE schoolName = '" + userSchool + "' LIMIT 1";
  // var queryString = "SELECT courseName FROM Courses WHERE school =(" + subQueryString + ");";
-  var queryString = "SELECT departmentName FROM Departments WHERE school =(" + subQueryString + ");";
+  var queryString = "SELECT departmentName FROM Departments WHERE school =(" + subQueryString + ") ORDER BY departmentName;";
   var query = client.query(queryString);
   query.on("row", function (row, result) {
      departments.push(row.departmentname) });
@@ -252,7 +252,7 @@ app.get('/api/' + 'departments/:school', function (req, res) {
   var school = req.params.school;
   var depts = "";
   var secondsub = "(SELECT SID FROM Schools WHERE schoolname = '" + school + "')";
-  var queryString = "(SELECT departmentName FROM Departments WHERE school = " + secondsub + ")";
+  var queryString = "(SELECT departmentName FROM Departments WHERE school = " + secondsub + " ORDER BY departmentName)";
   res.setHeader("Content-Type", "application/json");
   var query = client.query(queryString);
   query.on("row", function (row, result) {
@@ -274,16 +274,28 @@ app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
     query = "";
     var userCourses = req.body;
 	for(course in userCourses){
-	 courseDept = course[0];
-	 courseNumber = course[1];
-	 query += "OR (c.DID = " + courseDept + " AND c.courseNumber ='" + courseNumber + "')";
+	 courseDept = userCourses[course][0];
+	 courseNumber = userCourses[course][1];
+	 query += " OR (c.DID = " + courseDept + " AND c.courseNumber ='" + courseNumber + "')";
 	}
     //query = 'SELECT c.maristNumber FROM CourseEquivalencies c, CoursesToMajors m WHERE c.maristNumber = m.courseNumber AND';
     //query += ' c.maristDID = m.DID';
     //query += 'AND m.majorName = req.body.major';
     //query += " AND c.externalNumber = '" + req.body.course1[1] + "'";
     //query += " AND c.externalDID = (SELECT DID FROM Departments WHERE departmentName = '" + req.body.dept1 + "'";
-    res.render("courseEvaluation", {user:req.session.user});
+    testQuery = "SELECT d.departmentName,c.courseNumber,c.courseName,c.credits FROM Departments d, Courses c WHERE ";
+    testQuery += "d.DID = c.DID AND c.DID IN (SELECT DID FROM CoursesToMajors WHERE majorName = 'Applied Mathematics') ";
+    testQuery += "AND c.courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = 'Applied Mathematics')";
+    var theQuery = client.query(testQuery);
+    theCourses = [];
+    course = "";
+    theQuery.on('row', function (row, result){
+	course = row.departmentname + " " + row.coursenumber + "      " + row.coursename + "    " + row.credits;
+	theCourses.push(course);
+    });
+    theQuery.on('end', function(result){
+    	res.render("courseEvaluation", {user:req.session.user,courses:theCourses});
+    });
 });
 
 //Wireframe #10
@@ -310,14 +322,34 @@ app.get(rootAppDirectory + '/addUser', function(req,res) {
    if (req.session.clearance > 2){
     res.render("addUser",{user:req.session.user});
   }else {
-    res.redirect("accessDenied", {})
+    res.redirect("accessDenied")
+}});
+
+app.post(rootAppDirectory + '/addUserAction', function(req,res) {
+   if (req.session.clearance > 2){
+    var emailAddress = req.body.emailAddress;
+    var hashedPass = req.body.password;
+    var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var clearance = req.body.clearance;
+    var office = req.body.office;
+    client.query('INSERT INTO people (emailAddress, password, firstname, lastname) VALUES ($1, $2, $3, $4) RETURNING pid;', [emailAddress, doubleHashPass, firstName, lastName],
+    function(err,result) {
+      if(err) {
+        console.log(err);
+    } else{
+    var newID = result.rows[0].pid;
+    client.query('INSERT INTO employees (eid, office, clearance) VALUES ($1, $2, $3);', [newID, office, clearance]);
+}}); 
+    res.redirect("main");
 }});
 
 app.get(rootAppDirectory + '/addSchool', function(req,res) {
  if (req.session.clearance > 2){
     res.render("addSchool",{user:req.session.user});
   }else {
-    res.redirect("accessDenied", {})
+    res.redirect("accessDenied")
 }});
 
 

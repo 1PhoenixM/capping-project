@@ -3,6 +3,8 @@ extends ./wrapper.jade
 block content
     h2 Evaluation
     br
+    each course in courses
+      p= course   
     a(href='/admission/transfer/credits/app/courseSelection',method='POST') Reselect Courses
     br
     a(href='/admission/transfer/credits/app/login') Save
