@@ -4,14 +4,19 @@ block content
     h2 Add Department
     br
     form(name = 'addDepartment', action='/admission/transfer/credits/app/addDepartmentAction',method='POST')
-        | School: 
-        select(id='schools',name='schools')
-           option(value="Marist", selected=selected)= "Marist" 
-           each school in schools
+      table(style='width:50%')
+        tr
+          td School: 
+          td
+            select(id='schools',name='schools')
+              option(value="Marist", selected=selected)= "Marist" 
+              each school in schools
                 option(value=school, selected=selected)= school
-        br
-        | Department Name:
-        input(type='text', name='departmentName', align='right')
-        br
-        input(type='submit',value='Add Department')
+        tr
+          td Department Name:
+          td
+            input(type='text', name='departmentName', align='right')
+        tr
+          td
+            input(type='submit',value='Add Department')
  

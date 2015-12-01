@@ -4,79 +4,86 @@ block content
     h2 Add new school
     p
       form(name = 'addSchool', action='/admission/transfer/credits/app/addSchoolAction',method='POST')
-        | School Name: 
-        input(type='text', name='schoolName', align='right')
-        br
-        | Country: 
-        input(type='text', name='country', align='right')
-        br
-        | Address 1: 
-        input(type='text', name='address1', align='right')
-        br
-        | Address 2: 
-        input(type='text', name='address2', align='right')
-        br
-        | City : 
-        input(type='text', name='city', align='right')
-        br
-        | State : 
-        select(id='state', name='state')
-           option(value='AL') Alabama
-           option(value='AK') Alaska
-           option(value='AZ') Arizona
-           option(value='AR') Arkansas
-           option(value='CA') California
-           option(value='CO') Colorado
-           option(value='CT') Connecticut
-           option(value='DE') Delaware
-           option(value='DC') District Of Columbia
-           option(value='FL') Florida
-           option(value='GA') Georgia
-           option(value='HI') Hawaii
-           option(value='ID') Idaho
-           option(value='IL') Illinois
-           option(value='IN') Indiana
-           option(value='IA') Iowa
-           option(value='KS') Kansas
-           option(value='KY') Kentucky
-           option(value='LA') Louisiana
-           option(value='ME') Maine
-           option(value='MD') Maryland
-           option(value='MA') Massachusetts
-           option(value='MI') Michigan
-           option(value='MN') Minnesota
-           option(value='MS') Mississippi
-           option(value='MO') Missouri
-           option(value='MT') Montana
-           option(value='NE') Nebraska
-           option(value='NV') Nevada
-           option(value='NH') New Hampshire
-           option(value='NJ') New Jersey
-           option(value='NM') New Mexico
-           option(value='NY') New York
-           option(value='NC') North Carolina
-           option(value='ND') North Dakota
-           option(value='OH') Ohio
-           option(value='OK') Oklahoma
-           option(value='OR') Oregon
-           option(value='PA') Pennsylvania
-           option(value='RI') Rhode Island
-           option(value='SC') South Carolina
-           option(value='SD') South Dakota
-           option(value='TN') Tennessee
-           option(value='TX') Texas
-           option(value='UT') Utah
-           option(value='VT') Vermont
-           option(value='VA') Virginia
-           option(value='WA') Washington
-           option(value='WV') West Virginia
-           option(value='WI') Wisconsin
-           option(value='WY') Wyoming
-        br
-        | Zip : 
-        input(type='text', name='zip', align='right', maxlength = '9')
-        br
-        | Departments :
-        input(type='test', name='deparments', align='right')
-        br
-        input(type='submit',value='Add School')
+        table(style='width:66%')
+          tr
+            td School Name: 
+            td
+              input(type='text', name='schoolName', align='right')
+          tr
+            td Country: 
+            td
+              input(type='text', name='country', align='right')
+          tr
+            td Address 1: 
+            td
+              input(type='text', name='address1', align='right')
+          tr
+            td Address 2: 
+            td 
+              input(type='text', name='address2', align='right')
+          tr
+            td City : 
+            td
+              input(type='text', name='city', align='right')
+          tr
+            td State : 
+            td
+              select(id='state', name='state')
+                option(value='AL') Alabama
+                option(value='AK') Alaska
+                option(value='AZ') Arizona
+                option(value='AR') Arkansas
+                option(value='CA') California
+                option(value='CO') Colorado
+                option(value='CT') Connecticut
+                option(value='DE') Delaware
+                option(value='DC') District Of Columbia
+                option(value='FL') Florida
+                option(value='GA') Georgia
+                option(value='HI') Hawaii
+                option(value='ID') Idaho
+                option(value='IL') Illinois
+                option(value='IN') Indiana
+                option(value='IA') Iowa
+                option(value='KS') Kansas
+                option(value='KY') Kentucky
+                option(value='LA') Louisiana
+                option(value='ME') Maine
+                option(value='MD') Maryland
+                option(value='MA') Massachusetts
+                option(value='MI') Michigan
+                option(value='MN') Minnesota
+                option(value='MS') Mississippi
+                option(value='MO') Missouri
+                option(value='MT') Montana
+                option(value='NE') Nebraska
+                option(value='NV') Nevada
+                option(value='NH') New Hampshire
+                option(value='NJ') New Jersey
+                option(value='NM') New Mexico
+                option(value='NY') New York
+                option(value='NC') North Carolina
+                option(value='ND') North Dakota
+                option(value='OH') Ohio
+                option(value='OK') Oklahoma
+                option(value='OR') Oregon
+                option(value='PA') Pennsylvania
+                option(value='RI') Rhode Island
+                option(value='SC') South Carolina
+                option(value='SD') South Dakota
+                option(value='TN') Tennessee
+                option(value='TX') Texas
+                option(value='UT') Utah
+                option(value='VT') Vermont
+                option(value='VA') Virginia
+                option(value='WA') Washington
+                option(value='WV') West Virginia
+                option(value='WI') Wisconsin
+                option(value='WY') Wyoming
+          tr
+            td Zip : 
+            td
+              input(type='text', name='zip', align='right', maxlength = '9')
+          tr
+            td
+              input(type='submit',value='Add School')

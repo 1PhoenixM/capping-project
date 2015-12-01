@@ -143,3 +143,12 @@ function removeLine(count,school){
 	}*/
 	$("#remove"+count).remove();
 }
+
+function preselectCourses(courses,school){
+	for(i = 0; i < courses.length; i++){
+		courseParts = courses[i].split("_");
+		addNewLine(school,1);
+		//set selected to whatever this course is
+		//remove static list
+	}
+}

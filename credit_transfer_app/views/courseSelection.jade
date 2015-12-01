@@ -6,7 +6,9 @@ block content
     p
       | Select a Marist College major that you are interested in evaluating.
       br
-      form(action='/admission/transfer/credits/app/courseEvaluation',method='POST')
+      if !courses
+        - var courses = ["Test"];
+      form(action='/admission/transfer/credits/app/courseEvaluation',method='POST',onload='preselectCourses("#{courses}")')
         select(id='major',name='major')
           each major in majors
             option= major

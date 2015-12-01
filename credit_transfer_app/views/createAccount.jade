@@ -5,91 +5,91 @@ block content
     h2 Create Account
     p
       form(name = 'createAccount', action='/admission/transfer/credits/app/createAccountAction',method='POST' onSubmit = 'return encode()')
-      table(style='width:100%')
-        tr
-          td E-mail Address: 
-          td 
-            input(type='text', name='emailAddress', align='right')
-        tr
-          td Password: 
-          td 
-            input(type='password', name='password', align='right')
-        tr
-          td Confirm Password: 
-          td
-            input(type='password', name='confirmPassword', align='right')
-        tr
-          td School: 
-          td 
-            select(id='schools',name='schools')
-              each school in schools
-                option(value=school, selected=selected)= school
-        tr
-          td First Name: 
-          td 
-            input(type='text', name='firstName', align='right')
-        tr
-          td Last Name: 
-          td 
-            input(type='text', name='lastName', align='right')
-        tr
-          td State:
-          td
-            select(id='state', name='state')
-              option(value='AL') Alabama
-              option(value='AK') Alaska
-              option(value='AZ') Arizona
-              option(value='AR') Arkansas
-              option(value='CA') California
-              option(value='CO') Colorado
-              option(value='CT') Connecticut
-              option(value='DE') Delaware
-              option(value='DC') District Of Columbia
-              option(value='FL') Florida
-              option(value='GA') Georgia
-              option(value='HI') Hawaii
-              option(value='ID') Idaho
-              option(value='IL') Illinois
-              option(value='IN') Indiana
-              option(value='IA') Iowa
-              option(value='KS') Kansas
-              option(value='KY') Kentucky
-              option(value='LA') Louisiana
-              option(value='ME') Maine
-              option(value='MD') Maryland
-              option(value='MA') Massachusetts
-              option(value='MI') Michigan
-              option(value='MN') Minnesota
-              option(value='MS') Mississippi
-              option(value='MO') Missouri
-              option(value='MT') Montana
-              option(value='NE') Nebraska
-              option(value='NV') Nevada
-              option(value='NH') New Hampshire
-              option(value='NJ') New Jersey
-              option(value='NM') New Mexico
-              option(value='NY') New York
-              option(value='NC') North Carolina
-              option(value='ND') North Dakota
-              option(value='OH') Ohio
-              option(value='OK') Oklahoma
-              option(value='OR') Oregon
-              option(value='PA') Pennsylvania
-              option(value='RI') Rhode Island
-              option(value='SC') South Carolina
-              option(value='SD') South Dakota
-              option(value='TN') Tennessee
-              option(value='TX') Texas
-              option(value='UT') Utah
-              option(value='VT') Vermont
-              option(value='VA') Virginia
-              option(value='WA') Washington
-              option(value='WV') West Virginia
-              option(value='WI') Wisconsin
-              option(value='WY') Wyoming
-        tr
-          td
-            input(type='submit',value='Create Account')
+        table(style='width:66%')
+          tr
+            td E-mail Address: 
+            td 
+              input(type='text', name='emailAddress', align='right')
+          tr
+            td Password: 
+            td 
+              input(type='password', name='password', align='right')
+          tr
+            td Confirm Password: 
+            td
+              input(type='password', name='confirmPassword', align='right')
+          tr
+            td School: 
+            td 
+              select(id='schools',name='schools')
+                each school in schools
+                  option(value=school, selected=selected)= school
+          tr
+            td First Name: 
+            td 
+              input(type='text', name='firstName', align='right')
+          tr
+            td Last Name: 
+            td 
+              input(type='text', name='lastName', align='right')
+          tr
+            td State:
+            td
+              select(id='state', name='state')
+                option(value='AL') Alabama
+                option(value='AK') Alaska
+                option(value='AZ') Arizona
+                option(value='AR') Arkansas
+                option(value='CA') California
+                option(value='CO') Colorado
+                option(value='CT') Connecticut
+                option(value='DE') Delaware
+                option(value='DC') District Of Columbia
+                option(value='FL') Florida
+                option(value='GA') Georgia
+                option(value='HI') Hawaii
+                option(value='ID') Idaho
+                option(value='IL') Illinois
+                option(value='IN') Indiana
+                option(value='IA') Iowa
+                option(value='KS') Kansas
+                option(value='KY') Kentucky
+                option(value='LA') Louisiana
+                option(value='ME') Maine
+                option(value='MD') Maryland
+                option(value='MA') Massachusetts
+                option(value='MI') Michigan
+                option(value='MN') Minnesota
+                option(value='MS') Mississippi
+                option(value='MO') Missouri
+                option(value='MT') Montana
+                option(value='NE') Nebraska
+                option(value='NV') Nevada
+                option(value='NH') New Hampshire
+                option(value='NJ') New Jersey
+                option(value='NM') New Mexico
+                option(value='NY') New York
+                option(value='NC') North Carolina
+                option(value='ND') North Dakota
+                option(value='OH') Ohio
+                option(value='OK') Oklahoma
+                option(value='OR') Oregon
+                option(value='PA') Pennsylvania
+                option(value='RI') Rhode Island
+                option(value='SC') South Carolina
+                option(value='SD') South Dakota
+                option(value='TN') Tennessee
+                option(value='TX') Texas
+                option(value='UT') Utah
+                option(value='VT') Vermont
+                option(value='VA') Virginia
+                option(value='WA') Washington
+                option(value='WV') West Virginia
+                option(value='WI') Wisconsin
+                option(value='WY') Wyoming
+          tr
+            td
+              input(type='submit',value='Create Account')
         script(src='http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js')
         script.
           function encode(){
