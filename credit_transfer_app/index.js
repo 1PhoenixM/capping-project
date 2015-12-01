@@ -21,8 +21,7 @@ app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({    
   extended: true
 }));
-
-//app.use(express.cookieParser());
+var externalSchools = updateSchools();
 app.use(session({
   genid: function(req){
     return  crypto.randomBytes(48).toString('hex');
@@ -34,11 +33,21 @@ app.use(session({
   saveUninitialized: true,
 }));
 
-var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
-var externalSchools = [];
-query.on("row", function (row, result) {
+var majorsQuery = client.query("SELECT majorName FROM MaristMajors");
+var maristMajors = [];
+majorsQuery.on("row", function (row, result){
+	maristMajors.push(row.majorname);
+});
+
+function updateSchools(){
+  var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
+  var externalSchools = [];
+  query.on("row", function (row, result) {
     externalSchools.push(row.schoolname);
   });
+  return externalSchools;
+};
+
 
 /*function wrapPage(pageBody){
 	pageTop = fs.readFileSync(path.join(__dirname, './html/wrapper') + '/top.html', 'utf-8');	
@@ -224,8 +233,21 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   query.on("row", function (row, result) {
      departments.push(row.departmentname) });
   query.on("end",function ( result){
-     res.render("courseSelection", {depts:departments,school:userSchool,user:req.session.user});
-});
+     if(req.session.user === null){
+    	 res.render("courseSelection", {depts:departments,school:userSchool,majors:maristMajors,user:req.session.user});
+     }
+     if(req.session.user !== null){
+	var userCourses = [];
+     	var courseQuery = "SELECT d.departmentName,c.courseNumber FROM Departments d,UsersToCourses c WHERE d.DID = c.DID AND c.UID IN (SELECT PID FROM People WHERE emailAddress='"+ req.session.user +"')";
+	var courseQueryObj = client.query(courseQuery);
+	courseQueryObj.on("row", function (row, result){
+		userCourses.push(row.departmentname + " " + row.coursenumber);
+	});
+	courseQueryObj.on("end", function (result){
+		res.render("courseSelection", {depts:departments,school:userSchool,majors:maristMajors,user:req.session.user,courses:userCourses});
+	});
+     }
+   });
 });
 
 //JSON API to get data after the page has loaded, say a list of course numbers for a department the user selected.
@@ -272,29 +294,55 @@ app.get('/api/' + 'departments/:school', function (req, res) {
 app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
     console.log(req.body);
     query = "";
+    chosenMajor = req.body.major;
+    delete req.body.major;
     var userCourses = req.body;
 	for(course in userCourses){
-	 courseDept = userCourses[course][0];
-	 courseNumber = userCourses[course][1];
-	 query += " OR (c.DID = " + courseDept + " AND c.courseNumber ='" + courseNumber + "')";
+	  courseDept = userCourses[course][0];
+	  courseNumber = userCourses[course][1];
+	  query += " OR (c.DID = " + courseDept + " AND c.courseNumber ='" + courseNumber + "')";
 	}
     //query = 'SELECT c.maristNumber FROM CourseEquivalencies c, CoursesToMajors m WHERE c.maristNumber = m.courseNumber AND';
     //query += ' c.maristDID = m.DID';
     //query += 'AND m.majorName = req.body.major';
     //query += " AND c.externalNumber = '" + req.body.course1[1] + "'";
     //query += " AND c.externalDID = (SELECT DID FROM Departments WHERE departmentName = '" + req.body.dept1 + "'";
+    //sum(credits);
     testQuery = "SELECT d.departmentName,c.courseNumber,c.courseName,c.credits FROM Departments d, Courses c WHERE ";
-    testQuery += "d.DID = c.DID AND c.DID IN (SELECT DID FROM CoursesToMajors WHERE majorName = 'Applied Mathematics') ";
-    testQuery += "AND c.courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = 'Applied Mathematics')";
+    testQuery += "d.DID = c.DID AND c.DID IN (SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
+    testQuery += "AND c.courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
+    testQuery += "AND ("
+    multipleFlag = false;
+    for (course in userCourses){
+	courseDept = userCourses[course][0];
+        courseNumber = userCourses[course][1];
+        if(multipleFlag){
+		testQuery += " OR ";
+	}
+        testQuery += "(c.DID IN ";
+	testQuery += "(SELECT maristDID FROM CourseEquivalencies WHERE externalDID IN "
+	testQuery += "(SELECT DID FROM Departments WHERE departmentName='" + courseDept + "' ";
+	testQuery += "AND school IN (SELECT SID FROM Schools WHERE schoolName = '"+ externalSchools[0] +"')))";
+	testQuery += " AND c.courseNumber IN ";
+	testQuery += "(SELECT maristNumber FROM CourseEquivalencies WHERE externalNumber ='" + courseNumber + "'))";
+        if(!multipleFlag){
+		multipleFlag = true;
+	}
+    }
+    testQuery += ")";
+    console.log(testQuery);
     var theQuery = client.query(testQuery);
     theCourses = [];
     course = "";
+    total = 0;
     theQuery.on('row', function (row, result){
 	course = row.departmentname + " " + row.coursenumber + "      " + row.coursename + "    " + row.credits;
 	theCourses.push(course);
+	total += row.credits;
     });
     theQuery.on('end', function(result){
-    	res.render("courseEvaluation", {user:req.session.user,courses:theCourses});
+	theCourses.push("Total credits: " + total);
+    	res.render("courseEvaluation", {user:req.session.user,courses:theCourses,major:chosenMajor});
     });
 });
 
@@ -318,11 +366,27 @@ app.get(rootAppDirectory + '/addCourse', function(req,res) {
     res.redirect("accessDenied");
 }});
 
+app.post(rootAppDirectory + '/addCourseAction', function(req,res) {
+  if (req.session.clearance > 1){
+    var courseNumber = req.body.courseNumber;
+    var credits =  req.body.credits;
+    var description = req.body.description;
+    client.query('INSERT INTO courses (coursenumber,credits,description) VALUES ($1, $2, $3);',
+                 [courseNumber,credits,description],
+                 function(err,result) {
+                   if(err){
+                     console.log(err);
+                  }});  
+    res.redirect("main"); 
+  }else{
+    res.redirect("accessDenied");
+}});
+
 app.get(rootAppDirectory + '/addUser', function(req,res) {
    if (req.session.clearance > 2){
     res.render("addUser",{user:req.session.user});
   }else {
-    res.redirect("accessDenied")
+    res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/addUserAction', function(req,res) {
@@ -335,8 +399,8 @@ app.post(rootAppDirectory + '/addUserAction', function(req,res) {
     var clearance = req.body.clearance;
     var office = req.body.office;
     client.query('INSERT INTO people (emailAddress, password, firstname, lastname) VALUES ($1, $2, $3, $4) RETURNING pid;', [emailAddress, doubleHashPass, firstName, lastName],
-    function(err,result) {
-      if(err) {
+    function(err,result){
+      if(err){
         console.log(err);
     } else{
     var newID = result.rows[0].pid;
@@ -347,11 +411,64 @@ app.post(rootAppDirectory + '/addUserAction', function(req,res) {
 
 app.get(rootAppDirectory + '/addSchool', function(req,res) {
  if (req.session.clearance > 2){
-    res.render("addSchool",{user:req.session.user});
+    res.render("addSchool",{schools:externalSchools, user:req.session.user});
   }else {
     res.redirect("accessDenied")
 }});
 
+app.post(rootAppDirectory + '/addSchoolAction', function(req,res) {
+  if (req.session.clearance > 2){
+    var schoolName = req.body.schoolName;
+    var country = req.body.country;
+    var address1 = req.body.address1;
+    var address2 = req.body.address2;
+    var city  = req.body.city;
+    var state = req.body.state;
+    var zip = req.body.zip;
+    client.query('INSERT INTO schools (schoolName, country, address1, address2, city, state, zip) VALUES ($1, $2, $3, $4, $5, $6, $7);', 
+                [schoolName, country, address1, address2, city, state, zip],
+                function(err,result) {
+                  if(err) {
+                    console.log(err);
+                  }else{
+                    externalSchools = updateSchools();
+                  }
+                });
+    res.redirect("main");  
+  }else{
+    res.redirect("accessDenied");
+}});
+    
+app.get(rootAppDirectory + '/addDepartment', function(req,res) {
+ if (req.session.clearance > 1){
+    res.render("addDepartment",{schools:externalSchools, user:req.session.user});
+  }else {
+    res.redirect("accessDenied")
+}});
+
+app.post(rootAppDirectory + '/addDepartmentAction', function(req,res) {
+  if (req.session.clearance > 1){
+    var schoolName = req.body.school;
+    var school;
+    var departmentName = req.body.departmentName;
+    var schoolQueryString = "SELECT SID FROM Schools WHERE schoolname = '" + school + "' LIMIT 1;";
+    var query = client.query(schoolQueryString);
+    query.on("row", function (row,result) {
+        school = row.sid;
+    });
+    query.on("end",function (result){
+      client.query('INSERT INTO departments (departmentName, school) VALUES ($1, $2);', 
+                  [departmentName,school],
+                  function(err,result) {
+                    if(err) {
+                      console.log(err);
+                    }
+                  });
+    });
+    res.redirect("main");  
+  }else{
+    res.redirect("accessDenied");
+}});
 
 app.get(rootAppDirectory + '/accessDenied', function (req, res) {
   res.render("accessDenied", {user:req.session.user});

@@ -1,22 +1,24 @@
 extends ./wrapper.jade
 
 block content
-    h2 404 Add Course
+    h2 Add Course
     br
     form(name = 'addCourse', action='/admission/transfer/credits/app/createAccountAction',method='POST')
+        | School: 
+        select(id='schools',name='schools')
+           option(value="Marist", selected=selected)= "Marist" 
+           each school in schools
+                option(value=school, selected=selected)= school
+        br
         | Course Number:
-        input(type='text', name='CourseNumber', align='right')
+        input(type='text', name='courseNumber', align='right')
         br
         | Credits:
         input(type='text', name='credits', align='right')
         br
         | Description:
-        input(type='textarea', name='Description', align='right')
         br
-        | School: 
-        select(id='schools',name='schools')
-            each school in schools
-                option(value=school, selected=selected)= school
+        textarea(rows='4', cols='50', name='description', align='right')
         br
         input(type='submit',value='Add Course')
  

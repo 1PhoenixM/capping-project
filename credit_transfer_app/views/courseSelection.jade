@@ -4,9 +4,20 @@ block content
     h2 Course Selection
     br
     p
-      | Select Courses that you have previously taken
+      | Select a Marist College major that you are interested in evaluating.
       br
       form(action='/admission/transfer/credits/app/courseEvaluation',method='POST')
+        select(id='major',name='major')
+          each major in majors
+            option= major
+        br
+        if courses
+         p
+         | These courses have been previously selected and are currently saved:
+         each course in courses
+          p= course
+        br
+        | Select courses that you have previously taken. To add another course, use the + button. To remove a course, use the X button.
         div(id='selectors')
           select(id='dept0',class='deptSelector',onchange='getCourseNumbers("#{school}",0)',name='course0')
             each department in depts

@@ -30,9 +30,10 @@ function getCourseNumbers(school,forLine){
 			html: coursesDropdown.join( "" )
 		  }).insertAfter( "#dept"+forLine );
 
+		  
 		  //Create a new line button
 		  $( "<button/>", {
-			"id": "plus",
+			"id": "plus"+forLine,
 			"type": "button",
 			"class": "pluses",
 			"style": "display:inline",
@@ -40,8 +41,8 @@ function getCourseNumbers(school,forLine){
 		  }).insertAfter( "#courseSelector"+forLine );
 	
 		  //Bind the new line event to the button
-		  $("#plus").bind("click", function(){
-			addNewLine(school,forLine+1);
+		  $("#plus"+forLine).bind("click", function(){
+			addNewLine(school);
 		  });
 	  }
 	  
@@ -89,24 +90,41 @@ function addNewLine(school){
 	        //getCourseNumbers(school,count);
 
 		//Remove the old new line button
-		$('#plus').remove();
+		//$('#plus').remove();
 
 		//Get the number of current rows
-		var count = $('.deptSelector').length;
+		var count = $('.deptSelector').length-1;
 
-		//Create a new line button for this row
+		pastLine = count-1;
+		//Remove old new line button
+		$('#plus'+pastLine).remove();
+
+		//Create a remove button for this row
 		$( "<button/>", {
 			"value": count + "",
-			"id": "plus",
+			"id": "remove"+count,
+			"type": "button",
+			"style": "display:inline",
+			html: "X"
+		}).appendTo( "#selectors" );
+
+		$("#remove"+count).bind("click", function(){
+			removeLine(count,school);
+		});	
+
+		//Create a new line button for this row
+		/*$( "<button/>", {
+			"value": count + "",
+			"id": "plus"+count,
 			"type": "button",
 			"style": "display:inline",
 			html: "+"
 		  }).appendTo( "#selectors" );
 		
 		//Bind the click event
-		$("#plus").bind("click", function(){
+		$("#plus"+count).bind("click", function(){
 			addNewLine(school);
-		});
+		});*/
 
 		//Add line break for next row
 		$( "<br/>", {
@@ -114,4 +132,14 @@ function addNewLine(school){
 
 
 	});
+}
+
+//Removes the specified line or row
+function removeLine(count,school){
+	$("#dept"+count).remove();
+	$("#courseSelector"+count).remove();
+	/*if($(".deptSelector").length >= 2){
+		$("#plus"+count).remove();
+	}*/
+	$("#remove"+count).remove();
 }
