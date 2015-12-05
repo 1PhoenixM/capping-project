@@ -10,6 +10,7 @@ var rootAppDirectory = '/admission/transfer/credits/app';
 var conString = "pg://postgres:Candi7@localhost:5432/credit_transfer";
 var client = new pg.Client(conString);
 client.connect();
+app.use(express.static(__dirname + '/static'));
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/admission/transfer/static', express.static(__dirname + '/static'));
 app.use('/admission/transfer/credits/static', express.static(__dirname + '/static'));
@@ -59,7 +60,7 @@ function updateSchools(){
 app.get('/', function (req, res) {
   /*pageBody = wrapPage(fs.readFileSync(path.join(__dirname, './html') + '/credits.html', 'utf-8'));	
   res.send(pageBody);*/
-  res.render("credits", {user:req.session.user});
+  res.render("credits", {startpage:1});
 });
 
 //Wireframe #1
@@ -69,7 +70,7 @@ app.get(rootDirectory, function (req, res) {
 });
 
 app.get(rootAppDirectory, function (req, res) {
-  res.render("startPage", {user:req.session.user});
+  res.render("startPage", {startpage:1});
 });
 
 //Wireframe #2
@@ -233,20 +234,28 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
   query.on("row", function (row, result) {
      departments.push(row.departmentname) });
   query.on("end",function ( result){
-     if(req.session.user === null){
-    	 res.render("courseSelection", {depts:departments,school:userSchool,majors:maristMajors,user:req.session.user});
-     }
-     if(req.session.user !== null){
-	var userCourses = [];
-     	var courseQuery = "SELECT d.departmentName,c.courseNumber FROM Departments d,UsersToCourses c WHERE d.DID = c.DID AND c.UID IN (SELECT PID FROM People WHERE emailAddress='"+ req.session.user +"')";
-	var courseQueryObj = client.query(courseQuery);
-	courseQueryObj.on("row", function (row, result){
-		userCourses.push(row.departmentname + " " + row.coursenumber);
-	});
-	courseQueryObj.on("end", function (result){
-		res.render("courseSelection", {depts:departments,school:userSchool,majors:maristMajors,user:req.session.user,courses:userCourses});
-	});
-     }
+     var initialCourses = [];
+     var getInitialCourses = client.query("SELECT courseNumber FROM Courses WHERE school=(" + subQueryString + ") AND DID IN (SELECT DID FROM Departments WHERE departmentName = '" + departments[0] + "' AND school =(" + subQueryString + "))");
+     getInitialCourses.on("row", function(row, result){
+	initialCourses.push(row.coursenumber);
+     }); 
+     getInitialCourses.on("end", function (result){
+     	 if(req.session.user === null){
+    		 res.render("courseSelection", {initialCourses:initialCourses,depts:departments,school:userSchool,majors:maristMajors,user:req.session.user,courses:"Test"});
+    	 }
+    	 if(req.session.user !== null){
+		var userCourses = "";
+	     	var courseQuery = "SELECT d.departmentName,c.courseNumber FROM Departments d,UsersToCourses c WHERE d.DID = c.DID AND c.UID IN (SELECT PID FROM People WHERE emailAddress='"+ req.session.user +"')";
+		var courseQueryObj = client.query(courseQuery);
+		courseQueryObj.on("row", function (row, result){
+			userCourses += row.departmentname + "_" + row.coursenumber + "/";
+		 });
+		 courseQueryObj.on("end", function (result){
+			userCourses = userCourses.substring(0,userCourses.length-1);
+			res.render("courseSelection", {initialCourses:initialCourses,depts:departments,school:userSchool,majors:maristMajors,user:req.session.user,userCourses:userCourses});
+		 });
+         }
+     });
    });
 });
 
@@ -257,7 +266,7 @@ app.get('/api/' + 'courseNumbers/:dept/:school', function (req, res) {
   var courseNumbers = "";
   var secondsub = "(SELECT SID FROM Schools WHERE schoolName = '" + school + "')";
   var subquery = "(SELECT DID FROM Departments WHERE departmentName = '" + dept + "' AND school = " + secondsub + ")";
-  var queryString = "SELECT courseNumber FROM Courses WHERE DID = " + subquery +  ";";
+  var queryString = "SELECT courseNumber FROM Courses WHERE DID = " + subquery +  " ORDER BY courseNumber;";
   res.setHeader("Content-Type", "application/json");
   var query = client.query(queryString);
   query.on("row", function (row, result) {
@@ -287,27 +296,34 @@ app.get('/api/' + 'departments/:school', function (req, res) {
 });
 });
 
+app.get('/api/' + 'coursetitles/:school/:dept/:coursenumber', function(req, res) {
+  var school = req.params.school;
+  var dept = req.params.dept;
+  var courseNumber = req.params.coursenumber;
+  var title = "";
+  var secondsub = "(SELECT SID FROM Schools WHERE schoolname = '" + school + "')";
+  var queryString = "SELECT courseName FROM Courses WHERE school = " + secondsub + " AND DID IN (SELECT DID FROM Departments WHERE departmentName = '" + dept + "') AND courseNumber = '" + courseNumber + "'";  
+  res.setHeader("Content-Type", "application/json");
+  theQuery = client.query(queryString);
+  theQuery.on("row", function(row,result){
+	title = row.coursename;
+  });
+  theQuery.on("end", function(result){
+	res.send(" { \"title\": \" " + title + " \"}");
+	res.end();
+  });
+});
+
 //Wireframe #12
 //If user entered only a major and no courses, shows the required Marist courses for that major.
 //If user entered only courses and selected no major, shows their personal percentage completion for all Marist majors in order, based on courses entered.
 //If user entered both courses and selected a major, shows a credit evaluation for that particular major with those courses.
 app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
-    console.log(req.body);
-    query = "";
+    //console.log(req.body);
+    //query = "";
     chosenMajor = req.body.major;
     delete req.body.major;
     var userCourses = req.body;
-	for(course in userCourses){
-	  courseDept = userCourses[course][0];
-	  courseNumber = userCourses[course][1];
-	  query += " OR (c.DID = " + courseDept + " AND c.courseNumber ='" + courseNumber + "')";
-	}
-    //query = 'SELECT c.maristNumber FROM CourseEquivalencies c, CoursesToMajors m WHERE c.maristNumber = m.courseNumber AND';
-    //query += ' c.maristDID = m.DID';
-    //query += 'AND m.majorName = req.body.major';
-    //query += " AND c.externalNumber = '" + req.body.course1[1] + "'";
-    //query += " AND c.externalDID = (SELECT DID FROM Departments WHERE departmentName = '" + req.body.dept1 + "'";
-    //sum(credits);
     testQuery = "SELECT d.departmentName,c.courseNumber,c.courseName,c.credits FROM Departments d, Courses c WHERE ";
     testQuery += "d.DID = c.DID AND c.DID IN (SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
     testQuery += "AND c.courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
@@ -330,7 +346,7 @@ app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
 	}
     }
     testQuery += ")";
-    console.log(testQuery);
+    //console.log(testQuery);
     var theQuery = client.query(testQuery);
     theCourses = [];
     course = "";
@@ -341,10 +357,64 @@ app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
 	total += row.credits;
     });
     theQuery.on('end', function(result){
-	theCourses.push("Total credits: " + total);
-    	res.render("courseEvaluation", {user:req.session.user,courses:theCourses,major:chosenMajor});
+	majorCreditQuery = client.query("SELECT sum(credits) FROM Courses WHERE DID IN " + 
+	"(SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') " + 
+	"AND courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "')");
+	majorCredits = 0;
+	majorCreditQuery.on("row", function(row,result){
+		majorCredits = row.sum;
+	});
+	majorCreditQuery.on("end", function(result){
+		if(total === 0){
+			theCourses.push("Your courses will be applied towards Core credit and/or elective credit!");
+		}
+		if(total !== 0)
+		{
+			theCourses.push("Total credits: " + total);
+			percentage = Math.round((total / majorCredits) * 100 * 100) / 100;
+			theCourses.push("Percentage complete: " + percentage + "%");
+		}
+		if(req.session.user !== null && typeof req.session.user !== 'undefined'){
+			saveCoursesThenRender(userCourses,theCourses,chosenMajor,req.session.user,res);
+		}
+		else{
+    			res.render("courseEvaluation", {user:req.session.user,courses:theCourses,major:chosenMajor});
+		}
+	});
     });
 });
+
+function saveCoursesThenRender(userCourses, theCourses, chosenMajor, user, res){
+	var numberOfCourses = Object.keys(userCourses).length;
+	if(userCourses.length === 0){
+		res.render("courseEvaluation", {user:user,courses:theCourses,major:chosenMajor});
+	}
+	did = 0;
+	uid = 0;
+	for(course in userCourses){
+		
+		(function(course,did,uid) { getDataQuery = client.query("SELECT DID FROM Departments WHERE departmentName = '" + userCourses[course][0] + "' AND school = 2");
+		getDataQuery.on("row", function(row, result){
+			did = row.did;
+		});
+		getDataQuery.on("end", function(result){
+			getUserQuery = client.query("SELECT UID FROM Users WHERE UID IN (SELECT PID FROM People WHERE emailAddress = '" + user + "')");
+			getUserQuery.on("row", function(row, result){
+				uid = row.uid;
+			});
+			getUserQuery.on("end", function(result){
+				client.query("INSERT INTO UsersToCourses VALUES ($1, $2, $3, $4)", [uid,2,did,userCourses[course][1]],
+				function(err,result){
+					numberOfCourses--; 
+					if(err) 
+						{console.log(err)}
+					if(numberOfCourses === 0){
+						res.render("courseEvaluation", {user:user,courses:theCourses,major:chosenMajor});
+					}});
+			});
+		}); })(course,did,uid);
+	}
+}
 
 //Wireframe #10
 //Form allowing a user to request a course not found in our database.
@@ -358,7 +428,7 @@ app.post(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
   res.render("requestCourseConfirmation", {user:req.session.user});
 });
 
-//To be added: Administrator action pages for Admissions/Registrar to alter the database.
+//Course Management
 app.get(rootAppDirectory + '/addCourse', function(req,res) {
   if (req.session.clearance > 1){
     res.render("addCourse",{user:req.session.user, schools:externalSchools});
@@ -382,6 +452,28 @@ app.post(rootAppDirectory + '/addCourseAction', function(req,res) {
     res.redirect("accessDenied");
 }});
 
+app.get(rootAppDirectory + '/viewCourse', function(req,res) {
+  if (req.session.clearance > 1){
+    res.render("viewCourse", {user:req.session.user});
+  } else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/editCourse', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("editCourse",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/deleteCourse', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("deleteCourse",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+//User Management
 app.get(rootAppDirectory + '/addUser', function(req,res) {
    if (req.session.clearance > 2){
     res.render("addUser",{user:req.session.user});
@@ -409,6 +501,29 @@ app.post(rootAppDirectory + '/addUserAction', function(req,res) {
     res.redirect("main");
 }});
 
+app.get(rootAppDirectory + '/viewUser', function(req,res) {
+   if (req.session.clearance > 2){
+    res.render("viewUser",{user:req.session.user});
+    client.query('SELECT * from people;'); 
+  }else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/editUser', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("editUser",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/deleteUser', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("deleteUser",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+//School Management
 app.get(rootAppDirectory + '/addSchool', function(req,res) {
  if (req.session.clearance > 2){
     res.render("addSchool",{schools:externalSchools, user:req.session.user});
@@ -438,7 +553,29 @@ app.post(rootAppDirectory + '/addSchoolAction', function(req,res) {
   }else{
     res.redirect("accessDenied");
 }});
-    
+
+app.get(rootAppDirectory + '/viewSchool', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("viewSchool", {user:req.session.user});
+  } else {
+    res.redirect("accessDenied");
+}});
+
+ app.get(rootAppDirectory + '/editSchool', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("editSchool",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});   
+
+app.get(rootAppDirectory + '/deleteSchool', function(req,res) {
+  if (req.session.clearance > 2){
+    res.render("deleteSchool",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+//Department management
 app.get(rootAppDirectory + '/addDepartment', function(req,res) {
  if (req.session.clearance > 1){
     res.render("addDepartment",{schools:externalSchools, user:req.session.user});
@@ -467,6 +604,27 @@ app.post(rootAppDirectory + '/addDepartmentAction', function(req,res) {
     });
     res.redirect("main");  
   }else{
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/viewDepartment', function(req,res) {
+  if (req.session.clearance > 1){
+    res.render("viewDepartment", {user:req.session.user});
+  } else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/editDepartment', function(req,res) {
+  if (req.session.clearance > 1){
+    res.render("editDepartment",{user:req.session.user});
+  }else {
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + '/deleteDepartment', function(req,res) {
+  if (req.session.clearance > 1){
+    res.render("deleteDepartment",{user:req.session.user});
+  }else {
     res.redirect("accessDenied");
 }});
 

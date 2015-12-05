@@ -7,18 +7,25 @@ block content
       | If the course you are looking to transfer does not show up in the course selection page, you can create a request for review here. Fill out all fields to assist the Admissions department with identifying your course:
     br
     form(action='/admission/transfer/credits/app/requestCourseConfirmation',method='POST')
-      | Course Name: 
-      input(type='text', name='courseName')
-      br
-      | Course Number: 
-      input(type='text', name='courseNumber')
-      br
-      | Course Description: 
-      textarea(name='courseDescription')
-      br
-      | School:
-      select(id='schools',name='schools')
-            each school in schools
-                option(value=school, selected=selected)= school
-      br
-      input(type='submit',value='Select School')
+      table(style='width:50%')
+         tr
+           td School:
+           td
+             select(id='schools',name='schools')
+               each school in schools
+                 option(value=school, selected=selected)= school
+         tr 
+           td Course Name: 
+           td 
+             input(type='text', name='courseName')
+         tr
+           td Course Number: 
+           td
+             input(type='text', name='courseNumber')
+         tr
+           td Course Description: 
+           td
+             textarea(name='courseDescription')
+         tr
+           td
+             input(type='submit',value='Submit')

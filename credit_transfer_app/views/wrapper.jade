@@ -178,17 +178,20 @@ html.gecko.ff3.win.js(lang='en')
               img(src='static/dired.gif', style='border:0px; width:8px; height:15px', alt='edit')
           aside#body-relatedinfo
             hr
-            .floatleft
-            if user
-              .floatright
-                a(href='/admission/transfer/credits/app/logout') Logout    
-            else
-              .floatright
-                br 
-                a(href='/admission/transfer/credits/app/login') Login
-                br
-                a(href='/admission/transfer/credits/app/createAccount') Create Account
-                br 
+            if !startpage
+              .floatleft
+              if user
+                .floatright
+                  a(href='/admission/transfer/credits/app/main') Main Menu
+                  br                  
+                  a(href='/admission/transfer/credits/app/logout') Logout   
+                  br  
+              else
+                .floatright
+                  a(href='/admission/transfer/credits/app/login') Login
+                  br
+                  a(href='/admission/transfer/credits/app/createAccount') Create Account
+                  br 
             block content
             
     footer#footer-content.grid-container.grid-parent

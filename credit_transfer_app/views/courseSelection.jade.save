@@ -1,7 +1,6 @@
 extends ./wrapper.jade
 
 block content
-  body(onload='preselectCourses("#{userCourses}", "#{school}")')
     h2 Course Selection
     script(src='/static/js/dynamicJSON.js')
     br
@@ -11,7 +10,8 @@ block content
       if !courses
         - var courses = ["Test"];
       form(action='/admission/transfer/credits/app/courseEvaluation',method='POST',onload='preselectCourses("#{courses}")')
-        // - var runPreselect = preselectCourses("#{courses}","#{school}")
+        script(type="text/javascript") 
+         -  preselectCourses("#{courses}","#{school}");
         select(id='major',name='major')
           each major in majors
             option= major

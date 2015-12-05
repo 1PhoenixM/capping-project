@@ -20,8 +20,8 @@ function getCourseNumbers(school,forLine){
 	  }
 	 
 	  //If the course selector does not exist...
-	  if($('#courseSelector' + forLine).length == 0){
-
+	  if($('#courseSelector' + forLine).length === 0){
+  
 		  //Create the course dropdown
 		  $( "<select/>", {
 			"id": "courseSelector" + forLine,
@@ -30,20 +30,10 @@ function getCourseNumbers(school,forLine){
 			html: coursesDropdown.join( "" )
 		  }).insertAfter( "#dept"+forLine );
 
-		  
-		  //Create a new line button
-		  $( "<button/>", {
-			"id": "plus"+forLine,
-			"type": "button",
-			"class": "pluses",
-			"style": "display:inline",
-			html: "+"
-		  }).insertAfter( "#courseSelector"+forLine );
-	
-		  //Bind the new line event to the button
-		  $("#plus"+forLine).bind("click", function(){
-			addNewLine(school);
+		  $('#courseSelector'+forLine).bind("change", function(){
+			getCourseTitle(school,forLine);
 		  });
+
 	  }
 	  
 	  //If course selector already exists, i.e. user just chose a new department,
@@ -87,7 +77,7 @@ function addNewLine(school){
 		});
 
 		//Create course number dropdown
-	        //getCourseNumbers(school,count);
+	        getCourseNumbers(school,count);
 
 		//Remove the old new line button
 		//$('#plus').remove();
@@ -97,7 +87,7 @@ function addNewLine(school){
 
 		pastLine = count-1;
 		//Remove old new line button
-		$('#plus'+pastLine).remove();
+		//$('#plus'+pastLine).remove();
 
 		//Create a remove button for this row
 		$( "<button/>", {
@@ -128,6 +118,7 @@ function addNewLine(school){
 
 		//Add line break for next row
 		$( "<br/>", {
+			"id": "break"+count
 		  }).appendTo( "#selectors" );
 
 
@@ -142,13 +133,59 @@ function removeLine(count,school){
 		$("#plus"+count).remove();
 	}*/
 	$("#remove"+count).remove();
+	$("#coursetitle"+count).remove();
+	$("#break"+count).remove();
 }
 
 function preselectCourses(courses,school){
-	for(i = 0; i < courses.length; i++){
-		courseParts = courses[i].split("_");
-		addNewLine(school,1);
-		//set selected to whatever this course is
-		//remove static list
+	if(courses === "Test"){
+
 	}
+	else{
+	userCourses = courses.split("/");
+	for(i = 0; i < userCourses.length; i++){
+		courseParts = userCourses[i].split("_");
+		if(i === 0){
+			optionCounter = 0;
+                        optionCounter2 = 0;
+			$('#dept0 option').each(function()
+			{
+				if($(this).val() === courseParts[0]){
+					$('#dept0 option:eq(' + optionCounter + ')').prop('selected', true);
+					return;
+				}
+				optionCounter++;
+			});
+			getCourseNumbers(school,0);
+			$('#courseSelector0 option').each(function()
+			{       //get this to supply the real course then continue to the rest of the rows
+				if($(this).val() === courseParts[1]){
+					$('#courseSelector0 option:eq(' + optionCounter2 + ')').prop('selected', true);
+					return;
+				}
+				optionCounter2++;
+			});
+		}
+		else{
+			addNewLine(school,i);
+		}
+	}
+     }
+}
+
+function getCourseTitle(school,count){
+	dept = $('#dept'+count).val();
+	courseNumber = $('#courseSelector'+count).val();
+	$.getJSON("/api/coursetitles/" + school + "/" + dept + "/" + courseNumber, function (data){
+		if($('#coursetitle'+count).length  === 0){
+			$("<span>", {
+				"id": "coursetitle"+count,
+				"style": "display:inline",
+				html: data.title
+			}).insertAfter('#courseSelector'+count);
+		}
+		else{
+			$('#coursetitle'+count).html = data.title;
+		}	
+	});
 }
