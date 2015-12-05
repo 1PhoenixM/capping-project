@@ -1,16 +1,44 @@
 extends ./wrapper.jade
 
 block content
-    h2 View Users
-    p
-      table(style='width:100%', text-align='center', border='1')
+  h2 Employees
+  p
+    table(style='width:100%', text-align='center', border='1')
+      tr
+        th First Name
+        th Last Name
+        th Gender
+        th Clearance
+        th Race
+        th Office
+        th Email Address
+      each employee in employees
         tr
-          th First Name
-          th Last Name
-          th Gender
-          th Age
-          th Race
-          th State
-          th Email Address
-        tr
-          //get info from query
+          td= employee.firstname
+          td= employee.lastname
+          td= employee.gender
+          td= employee.clearance
+          td= employee.race
+          td= employee.office
+          td= employee.emailaddress
+   h2 Users
+   p
+     table(style='width:100%', text-align='center', border='1')
+       tr
+         th First Name
+         th Last Name
+         th Gender
+         th Age
+         th Race
+         th State
+         th Email Address 
+       each user in users
+         tr
+          td= user.firstname
+          td= user.lastname
+          td= user.gender
+          td= user.age
+          td= user.race
+          td= user.state
+          td= user.emailaddress          
+  

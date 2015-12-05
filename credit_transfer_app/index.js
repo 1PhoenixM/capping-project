@@ -438,7 +438,7 @@ app.get(rootAppDirectory + '/addCourse', function(req,res) {
 
 app.post(rootAppDirectory + '/addCourseAction', function(req,res) {
   if (req.session.clearance > 1){
-    var courseNumber = req.body.courseNumber;
+    var courseNumber = req.body.courseNumber;this
     var credits =  req.body.credits;
     var description = req.body.description;
     client.query('INSERT INTO courses (coursenumber,credits,description) VALUES ($1, $2, $3);',
@@ -460,16 +460,30 @@ app.get(rootAppDirectory + '/viewCourse', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/editCourse', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance > 1){
     res.render("editCourse",{user:req.session.user});
   }else {
     res.redirect("accessDenied");
 }});
 
+app.post(rootAppDirectory + '/editCourseAction', function(req,res) {
+  if (req.session.clearnace > 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
 app.get(rootAppDirectory + '/deleteCourse', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance > 1){
     res.render("deleteCourse",{user:req.session.user});
   }else {
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + '/deleteCourseAction', function(req,res) {
+  if (req.session.clearnace > 1){
+    res.redirect("main");
+  }else{
     res.redirect("accessDenied");
 }});
 
@@ -503,9 +517,24 @@ app.post(rootAppDirectory + '/addUserAction', function(req,res) {
 
 app.get(rootAppDirectory + '/viewUser', function(req,res) {
    if (req.session.clearance > 2){
-    res.render("viewUser",{user:req.session.user});
-    client.query('SELECT * from people;'); 
-  }else {
+     var users = [];
+     var employees = [];
+     var employeeQueryString = "SELECT people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid;"
+     var userQueryString = "SELECT DISTINCT people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people, employees WHERE pid NOT IN (SELECT people.pid FROM people,employees WHERE people.pid = employees.eid);"
+     var employeeQuery = client.query(employeeQueryString);
+     employeeQuery.on("row", function(row, result){
+       employees.push(row);
+     });
+     var userQuery = client.query(userQueryString);
+     userQuery.on("row", function(row, result){
+       users.push(row);
+     });
+     employeeQuery.on("end", function(row,result){
+       userQuery.on("end", function(row,result){
+         res.render("viewUser",{user:req.session.user,users:users,employees:employees});
+       });
+     });  
+ }else{
     res.redirect("accessDenied");
 }});
 
@@ -516,10 +545,24 @@ app.get(rootAppDirectory + '/editUser', function(req,res) {
     res.redirect("accessDenied");
 }});
 
+app.post(rootAppDirectory + '/editUserAction', function(req,res) {
+  if (req.session.clearnace > 2){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
 app.get(rootAppDirectory + '/deleteUser', function(req,res) {
   if (req.session.clearance > 2){
     res.render("deleteUser",{user:req.session.user});
   }else {
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + '/deleteUserAction', function(req,res) {
+  if (req.session.clearnace > 2){
+    res.redirect("main");
+  }else{
     res.redirect("accessDenied");
 }});
 
@@ -568,10 +611,24 @@ app.get(rootAppDirectory + '/viewSchool', function(req,res) {
     res.redirect("accessDenied");
 }});   
 
+app.post(rootAppDirectory + '/editSchoolAction', function(req,res) {
+  if (req.session.clearnace > 2){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
 app.get(rootAppDirectory + '/deleteSchool', function(req,res) {
   if (req.session.clearance > 2){
     res.render("deleteSchool",{user:req.session.user});
   }else {
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + '/deleteSchoolAction', function(req,res) {
+  if (req.session.clearnace > 2){
+    res.redirect("main");
+  }else{
     res.redirect("accessDenied");
 }});
 
@@ -621,10 +678,24 @@ app.get(rootAppDirectory + '/editDepartment', function(req,res) {
     res.redirect("accessDenied");
 }});
 
+app.post(rootAppDirectory + '/editDepartmentAction', function(req,res) {
+  if (req.session.clearnace > 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
 app.get(rootAppDirectory + '/deleteDepartment', function(req,res) {
   if (req.session.clearance > 1){
     res.render("deleteDepartment",{user:req.session.user});
   }else {
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + '/deleteDepartmentAction', function(req,res) {
+  if (req.session.clearnace > 1){
+    res.redirect("main");
+  }else{
     res.redirect("accessDenied");
 }});
 
