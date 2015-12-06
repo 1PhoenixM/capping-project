@@ -42,16 +42,10 @@ emailAddress text unique not null,
 password text not null
 );
 
--- Stores all users (all of which are also people) --
-CREATE TABLE Users
-(
-UID int references People(PID) primary key
-);
-
 -- Stores all employee users (all of which are also people) --
 CREATE TABLE Employees
 (
-EID int references People(PID) primary key,
+EID int references People(PID) primary key ON DELETE CASCADE,
 office Office,
 clearance Clearance
 );

@@ -1,0 +1,52 @@
+extends ./wrapper.jade
+
+block content
+    h2 Add User
+    p
+      form(name = 'createUser', action='/admission/transfer/credits/app/addUserAction',method='POST' onSubmit = 'return encode()')
+        table(style='width:50%')
+          tr
+            td E-mail Address: 
+            td
+              input(type='text', name='emailAddress', align='right')
+          tr
+            td Password: 
+            td
+              input(type='password', name='password', align='right')
+          tr
+            td Confirm Password: 
+            td
+              input(type='password', name='confirmPassword', align='right')
+          tr
+          td Office:
+          td 
+            select(id='office', name='office')
+              option= "Registrar"
+              option= "Admissions"
+              option= "Other"
+          tr
+            td First Name: 
+            td
+              input(type='text', name='firstName', align='right')
+          tr
+            td Last Name: 
+            td 
+              input(type='text', name='lastName', align='right')
+          tr
+            td Clearance:
+            td
+              select(id='clearance', name='clearance')
+                option= 1
+                option= 2 
+            tr
+              td
+                input(type='submit',value='Create User')
+        script(src='http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js')
+        script.
+          function encode(){
+            if (document.createUser.password.value == document.createUser.confirmPassword.value) {
+              document.createUser.password.value = CryptoJS.SHA256(document.createUser.password.value);
+              document.createUser.confirmPassword.value = CryptoJS.SHA256(document.createUser.password.value);
+            }
+          }
+

@@ -454,7 +454,15 @@ app.post(rootAppDirectory + '/addCourseAction', function(req,res) {
 
 app.get(rootAppDirectory + '/viewCourse', function(req,res) {
   if (req.session.clearance > 1){
-    res.render("viewCourse", {user:req.session.user});
+    var courses = [];
+    var courseQueryString = "SELECT DISTINCT schools.schoolname, departments.departmentName, courses.courseNumber, courses.courseNumber, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.DID = departments.DID AND courses.school = schools.SID ORDER BY schools.schoolname,departments.departmentName;";
+    var query = client.query(courseQueryString);
+    query.on("row", function(row,result){
+      courses.push(row);
+    });
+    query.on("end", function(row,result){ 
+      res.render("viewCourse", {user:req.session.user,courses:courses});
+    });
   } else {
     res.redirect("accessDenied");
 }});
@@ -519,8 +527,8 @@ app.get(rootAppDirectory + '/viewUser', function(req,res) {
    if (req.session.clearance > 2){
      var users = [];
      var employees = [];
-     var employeeQueryString = "SELECT people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid;"
-     var userQueryString = "SELECT DISTINCT people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people, employees WHERE pid NOT IN (SELECT people.pid FROM people,employees WHERE people.pid = employees.eid);"
+     var employeeQueryString = "SELECT people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid ORDER BY people.lastName;"
+     var userQueryString = "SELECT DISTINCT people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people, employees WHERE pid NOT IN (SELECT people.pid FROM people,employees WHERE people.pid = employees.eid) ORDER BY people.lastName;"
      var employeeQuery = client.query(employeeQueryString);
      employeeQuery.on("row", function(row, result){
        employees.push(row);
@@ -546,7 +554,7 @@ app.get(rootAppDirectory + '/editUser', function(req,res) {
 }});
 
 app.post(rootAppDirectory + '/editUserAction', function(req,res) {
-  if (req.session.clearnace > 2){
+  if (req.session.clearance > 2){
     res.redirect("main");
   }else{
     res.redirect("accessDenied");
@@ -554,13 +562,32 @@ app.post(rootAppDirectory + '/editUserAction', function(req,res) {
 
 app.get(rootAppDirectory + '/deleteUser', function(req,res) {
   if (req.session.clearance > 2){
-    res.render("deleteUser",{user:req.session.user});
-  }else {
+    var users = [];
+    var employees = [];
+    var employeeQueryString = "SELECT people.pid, people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid ORDER BY people.lastName;"
+    var userQueryString = "SELECT DISTINCT people.pid, people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people, employees WHERE pid NOT IN (SELECT people.pid FROM people,employees WHERE people.pid = employees.eid) ORDER BY people.lastName;"
+    var employeeQuery = client.query(employeeQueryString);
+    employeeQuery.on("row", function(row, result){
+      employees.push(row);
+    });
+    var userQuery = client.query(userQueryString);
+    userQuery.on("row", function(row, result){
+      users.push(row);
+    });
+    employeeQuery.on("end", function(row,result){
+      userQuery.on("end", function(row,result){
+        res.render("deleteUser",{user:req.session.user,users:users,employees:employees});
+      });
+    });  
+  }else{
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/deleteUserAction', function(req,res) {
-  if (req.session.clearnace > 2){
+  if (req.session.clearance > 2){
+    var pid = req.body.pid;
+    var userDeleteQuery = "DELETE FROM people WHERE pid IN (" + pid + ");";
+    client.query(userDeleteQuery); 
     res.redirect("main");
   }else{
     res.redirect("accessDenied");
@@ -599,7 +626,15 @@ app.post(rootAppDirectory + '/addSchoolAction', function(req,res) {
 
 app.get(rootAppDirectory + '/viewSchool', function(req,res) {
   if (req.session.clearance > 2){
-    res.render("viewSchool", {user:req.session.user});
+    schools = [];
+    var schoolQueryString = "SELECT DISTINCT schoolName, country, address1, address2,city, state, zip FROM Schools ORDER BY schoolName;";
+    var query = client.query(schoolQueryString);
+    query.on("row", function(row, result){
+      schools.push(row);
+    });
+    query.on("end", function(row,result){
+      res.render("viewSchool", {user:req.session.user,schools:schools});
+    });
   } else {
     res.redirect("accessDenied");
 }});
@@ -666,7 +701,15 @@ app.post(rootAppDirectory + '/addDepartmentAction', function(req,res) {
 
 app.get(rootAppDirectory + '/viewDepartment', function(req,res) {
   if (req.session.clearance > 1){
-    res.render("viewDepartment", {user:req.session.user});
+    var departments = [];
+    var departmentQueryString = "SELECT departments.departmentName, schools.schoolName FROM schools, departments WHERE departments.school = schools.sid ORDER BY schools.schoolname, departments.departmentname;";
+    var query = client.query(departmentQueryString);
+    query.on("row",function (row,result) {
+      departments.push(row);
+    });
+    query.on("end",function (row,result) {
+      res.render("viewDepartment", {user:req.session.user,departments:departments});
+    });
   } else {
     res.redirect("accessDenied");
 }});
