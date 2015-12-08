@@ -24,16 +24,17 @@ block content
         // br
         | Select courses that you have previously taken. To add another course, use the + button. To remove a course, use the X button.
         div(id='selectors')
-          select(id='dept0',class='deptSelector',onchange='getCourseNumbers("#{school}",0)',name='course0')
+          select(id='dept0',class='deptSelector',onchange='getCourseNumbers("#{school}",0,false,"")',name='course0')
             each department in depts
               option= department
           select(id='courseSelector0',class='courseSelector',onchange='getCourseTitle("#{school}",0)')
             each course in initialCourses
               option= course
           br
-        button(value='+',type='button',onclick='addNewLine("#{school}")')
-          &#43;
+        button(value='+',type='button',onclick='addNewLine("#{school}",false,"","")') &#43;
         br
+        if user
+          input(type='text',id='toBeDeleted',style='display:none;',name='deletes',value='')
         button#submit(type='submit') Submit Courses
         br
         | Don't see a course? Submit a request 

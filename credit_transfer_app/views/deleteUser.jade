@@ -1,7 +1,7 @@
 extends ./wrapper.jade
 
 block content
-    h2 Employees
+    h2 Delete Employees
     p
     form(name = 'deleteUser', action='/admission/transfer/credits/app/deleteUserAction',method='POST')
       table(style='width:100%', text-align='center', border='1')
@@ -25,7 +25,7 @@ block content
             td= employee.race
             td= employee.office
             td= employee.emailaddress
-      h2 Users
+      h2 Delete Users
       p
       table(style='width:100%', text-align='center', border='1')
         tr

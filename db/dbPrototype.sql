@@ -102,7 +102,7 @@ PRIMARY KEY (school, DID, courseNumber)
 -- Maps users to the courses they have already input from their school(s) for later retrieval -- 
 CREATE TABLE UsersToCourses
 (
-UID int references Users(UID),
+PID int references People(PID),
 school int,
 DID int,
 courseNumber text,

@@ -4,11 +4,30 @@ block content
     h2 Evaluation
     hr
     br
+    select(id='majorSelector',onchange='')
+     each major in majors
+       option= major
+    br
     Major Evaluated: 
      p= major
-    each course in courses
-      p= course   
-    a(href='/admission/transfer/credits/app/courseSelection',method='POST') Reselect Courses
+    if !isempty
+      table(border=1)
+        thead
+            tr
+              th External Courses
+              th Marist Courses
+            each course in courses
+              tr
+                td
+                  - if(course.indexOf("=") > 0) {var external = course.split("=")[0]};
+                  | #{external} 
+                td
+                  - if(course.indexOf("=") > 0) {var marist = course.split("=")[1]};
+                  | #{marist}
+    each message in messages
+      p= message
+    form(action='/admission/transfer/credits/app/courseSelection',method='POST',style='display:none;',id='sel')
+    a(onclick='document.getElementById("sel").submit()') Reselect Courses
     br
     a(href='/admission/transfer/credits/app/login') Save
 

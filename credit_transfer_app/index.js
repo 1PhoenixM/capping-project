@@ -174,10 +174,10 @@ app.post(rootAppDirectory + '/changePasswordAction', function ( req, res){
 //Wireframe #4
 //The "forgot password" page allowing an email to be sent to the user.
 app.get(rootAppDirectory + '/forgotPassword', function (req, res) {
-  if (req.session.user){ 
-    res.render("forgotPassword", {user:req.session.user});
+  if (req.session.user){
+    res.redirect("main"); 
  } else{
-    res.redirect(rootAppDirectory + '/accessDenied'); 
+    res.render("forgotPassword", {user:req.session.user});
  }
 });
 
@@ -245,7 +245,7 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
     	 }
     	 if(req.session.user !== null){
 		var userCourses = "";
-	     	var courseQuery = "SELECT d.departmentName,c.courseNumber FROM Departments d,UsersToCourses c WHERE d.DID = c.DID AND c.UID IN (SELECT PID FROM People WHERE emailAddress='"+ req.session.user +"')";
+	     	var courseQuery = "SELECT d.departmentName,c.courseNumber FROM Departments d,UsersToCourses c WHERE d.DID = c.DID AND c.PID IN (SELECT PID FROM People WHERE emailAddress='"+ req.session.user +"')";
 		var courseQueryObj = client.query(courseQuery);
 		courseQueryObj.on("row", function (row, result){
 			userCourses += row.departmentname + "_" + row.coursenumber + "/";
@@ -258,6 +258,22 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
      });
    });
 });
+
+function deleteCourses(toBeDeleted,uid){
+	theCourses = toBeDeleted.split("/");
+	courseDept = '';
+	courseNumber = '';
+	(function (courseDept,courseNumber){
+		for(var i = 0; i < theCourses.length; i++){
+			courseDept = theCourses[i].split("_")[0];
+			courseNumber = theCourses[i].split("_")[1];
+			client.query("DELETE FROM UsersToCourses WHERE PID = $1 AND DID IN (SELECT DID FROM Departments WHERE departmentName = $2) AND courseNumber = $3",[uid,courseDept,courseNumber],
+			function(err,result){
+				if(err) {console.log(err)}
+			});
+		}
+	}) (courseDept,courseNumber);
+}	
 
 //JSON API to get data after the page has loaded, say a list of course numbers for a department the user selected.
 app.get('/api/' + 'courseNumbers/:dept/:school', function (req, res) {
@@ -319,100 +335,141 @@ app.get('/api/' + 'coursetitles/:school/:dept/:coursenumber', function(req, res)
 //If user entered only courses and selected no major, shows their personal percentage completion for all Marist majors in order, based on courses entered.
 //If user entered both courses and selected a major, shows a credit evaluation for that particular major with those courses.
 app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
-    //console.log(req.body);
+    console.log(req.body);
     //query = "";
     chosenMajor = req.body.major;
     delete req.body.major;
-    var userCourses = req.body;
-    testQuery = "SELECT d.departmentName,c.courseNumber,c.courseName,c.credits FROM Departments d, Courses c WHERE ";
-    testQuery += "d.DID = c.DID AND c.DID IN (SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
-    testQuery += "AND c.courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
-    testQuery += "AND ("
-    multipleFlag = false;
-    for (course in userCourses){
-	courseDept = userCourses[course][0];
-        courseNumber = userCourses[course][1];
-        if(multipleFlag){
-		testQuery += " OR ";
-	}
-        testQuery += "(c.DID IN ";
-	testQuery += "(SELECT maristDID FROM CourseEquivalencies WHERE externalDID IN "
-	testQuery += "(SELECT DID FROM Departments WHERE departmentName='" + courseDept + "' ";
-	testQuery += "AND school IN (SELECT SID FROM Schools WHERE schoolName = '"+ externalSchools[0] +"')))";
-	testQuery += " AND c.courseNumber IN ";
-	testQuery += "(SELECT maristNumber FROM CourseEquivalencies WHERE externalNumber ='" + courseNumber + "'))";
-        if(!multipleFlag){
-		multipleFlag = true;
-	}
+    //console.log(req.body.deletes);
+    if(req.body.deletes && req.session.user !== null){
+	//console.log("Any");
+	toBeDeleted = req.body.deletes;
+	delete req.body.deletes;
+	deleteCourses(toBeDeleted,req.session.user);
     }
-    testQuery += ")";
-    //console.log(testQuery);
-    var theQuery = client.query(testQuery);
-    theCourses = [];
-    course = "";
+    var userCourses = req.body;
+    var numberOfCourses = Object.keys(userCourses).length;
     total = 0;
-    theQuery.on('row', function (row, result){
-	course = row.departmentname + " " + row.coursenumber + "      " + row.coursename + "    " + row.credits;
-	theCourses.push(course);
-	total += row.credits;
-    });
-    theQuery.on('end', function(result){
-	majorCreditQuery = client.query("SELECT sum(credits) FROM Courses WHERE DID IN " + 
-	"(SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') " + 
-	"AND courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "')");
-	majorCredits = 0;
-	majorCreditQuery.on("row", function(row,result){
-		majorCredits = row.sum;
-	});
-	majorCreditQuery.on("end", function(result){
-		if(total === 0){
-			theCourses.push("Your courses will be applied towards Core credit and/or elective credit!");
+    courseDept = '';
+    courseNumber = '';
+    theCourses = [];
+    messages = [];
+    course = '';
+    isEmpty = false;
+    for(course in userCourses){  
+	(function(course,theCourses,messages) {
+	    testQuery = "SELECT d.departmentName,c.courseNumber,c.courseName,c.credits FROM Departments d, Courses c WHERE ";
+	    testQuery += "d.DID = c.DID AND c.DID IN (SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
+	    testQuery += "AND c.courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') ";
+	    testQuery += "AND (";
+	    courseDept = userCourses[course][0];
+	    courseNumber = userCourses[course][1];
+	    //console.log(courseDept + " " + courseNumber);
+	        testQuery += "(c.DID IN ";
+		testQuery += "(SELECT maristDID FROM CourseEquivalencies WHERE externalDID IN "
+		testQuery += "(SELECT DID FROM Departments WHERE departmentName='" + courseDept + "' ";
+		testQuery += "AND school IN (SELECT SID FROM Schools WHERE schoolName = '"+ externalSchools[0] +"')))";
+		testQuery += " AND c.courseNumber IN ";
+		testQuery += "(SELECT maristNumber FROM CourseEquivalencies WHERE externalNumber ='" + courseNumber + "'))";
+	        /*if(!multipleFlag){
+			multipleFlag = true;
+		}*/
+	   
+	    testQuery += ")";
+	    //console.log(testQuery);
+	    var theQuery = client.query(testQuery);
+	    
+	    aCourse = "";
+	    theQuery.on('row', function (row, result){
+		aCourse = userCourses[course][0] + " " + userCourses[course][1] + " = " + row.departmentname + " " + row.coursenumber + "      " + row.coursename + "    " + row.credits;
+		//console.log(aCourse);
+		theCourses.push(aCourse);
+		total += row.credits;
+	    });
+
+	    theQuery.on('end', function(result){
+		numberOfCourses--;
+		if(numberOfCourses === 0){
+		majorCreditQuery = client.query("SELECT sum(credits) FROM Courses WHERE DID IN " + 
+		"(SELECT DID FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "') " + 
+		"AND courseNumber IN (SELECT courseNumber FROM CoursesToMajors WHERE majorName = '" + chosenMajor + "')");
+		majorCredits = 0;
+		majorCreditQuery.on("row", function(row,result){
+			majorCredits = row.sum;
+		});
+		majorCreditQuery.on("end", function(result){
+			if(total === 0){
+			isEmpty = true;
+			messages.push("Your courses will be applied towards Core credit and/or elective credit!");
 		}
 		if(total !== 0)
 		{
-			theCourses.push("Total credits: " + total);
+			messages.push("Total credits: " + total);
 			percentage = Math.round((total / majorCredits) * 100 * 100) / 100;
-			theCourses.push("Percentage complete: " + percentage + "%");
+			messages.push("Percentage complete: " + percentage + "%");
 		}
 		if(req.session.user !== null && typeof req.session.user !== 'undefined'){
-			saveCoursesThenRender(userCourses,theCourses,chosenMajor,req.session.user,res);
+			saveCoursesThenRender(userCourses,isEmpty,messages,theCourses,chosenMajor,req.session.user,res);
 		}
 		else{
-    			res.render("courseEvaluation", {user:req.session.user,courses:theCourses,major:chosenMajor});
+    			res.render("courseEvaluation", {user:req.session.user,isempty:isEmpty,messages:messages,majors:maristMajors,courses:theCourses,major:chosenMajor});
 		}
-	});
-    });
+	    });
+	    } 
+        });
+	  }) (course,theCourses,messages); }
 });
 
-function saveCoursesThenRender(userCourses, theCourses, chosenMajor, user, res){
+function saveCoursesThenRender(userCourses, isEmpty, messages, theCourses, chosenMajor, user, res){
 	var numberOfCourses = Object.keys(userCourses).length;
 	if(userCourses.length === 0){
 		res.render("courseEvaluation", {user:user,courses:theCourses,major:chosenMajor});
 	}
 	did = 0;
 	uid = 0;
+	hasChecked = false;
 	for(course in userCourses){
 		
-		(function(course,did,uid) { getDataQuery = client.query("SELECT DID FROM Departments WHERE departmentName = '" + userCourses[course][0] + "' AND school = 2");
+		(function(course,did,uid,hasChecked) { getDataQuery = client.query("SELECT DID FROM Departments WHERE departmentName = '" + userCourses[course][0] + "' AND school = 2");
 		getDataQuery.on("row", function(row, result){
 			did = row.did;
 		});
 		getDataQuery.on("end", function(result){
-			getUserQuery = client.query("SELECT UID FROM Users WHERE UID IN (SELECT PID FROM People WHERE emailAddress = '" + user + "')");
+			getUserQuery = client.query("SELECT PID FROM People WHERE emailAddress = '" + user + "'");
 			getUserQuery.on("row", function(row, result){
-				uid = row.uid;
+				uid = row.pid;
 			});
 			getUserQuery.on("end", function(result){
-				client.query("INSERT INTO UsersToCourses VALUES ($1, $2, $3, $4)", [uid,2,did,userCourses[course][1]],
+                                checkQuery = "SELECT * FROM UsersToCourses WHERE PID = " + uid + " AND DID = " + did + " AND school = " + 2 + " AND courseNumber = '" + userCourses[course][1] + "'";
+				if(true){
+					kept = false;
+					getUsersCourses = client.query("SELECT * FROM UsersToCourses WHERE PID = " + uid + "");
+					getUsersCourses.on("row", function(row,result){
+						if(did === row.did && row.coursenumber === userCourses[course][1]){
+							kept = true;	
+						} 
+						//console.log(did + " " + row.did + "/" + userCourses[course][1] + " " + row.coursenumber);
+						//console.log(kept + "");
+					});
+					getUsersCourses.on("end", function(result){
+						if(!kept){
+						        client.query("DELETE FROM UsersToCourses WHERE PID = $1 AND DID = $2 AND courseNumber = $3 AND school = 2", [uid,did,courseNumber], 
+							function(err,result){
+								if(err) {console.log(err)}
+							});
+						}
+					});
+					hasChecked = true;
+				}
+				client.query("INSERT INTO UsersToCourses SELECT $1, $2, $3, $4 WHERE NOT EXISTS ("+ checkQuery  +")", [uid,2,did,userCourses[course][1]],
 				function(err,result){
 					numberOfCourses--; 
 					if(err) 
 						{console.log(err)}
 					if(numberOfCourses === 0){
-						res.render("courseEvaluation", {user:user,courses:theCourses,major:chosenMajor});
+						res.render("courseEvaluation", {user:user,isempty:isEmpty,messages:messages,majors:maristMajors,courses:theCourses,major:chosenMajor});
 					}});
 			});
-		}); })(course,did,uid);
+		}); })(course,did,uid,hasChecked);
 	}
 }
 
@@ -431,13 +488,21 @@ app.post(rootAppDirectory + '/requestCourseConfirmation', function (req, res) {
 //Course Management
 app.get(rootAppDirectory + '/addCourse', function(req,res) {
   if (req.session.clearance > 1){
-    res.render("addCourse",{user:req.session.user, schools:externalSchools});
+    var schools = [];
+    var schoolQueryString = "SELECT DISTINCT sid, schoolName FROM Schools ORDER BY schoolName;";
+    var query = client.query(schoolQueryString);
+    query.on("row", function(row,result){
+      schools.push(row);
+    });
+    query.on("end",function(row,result){
+      res.render("addCourse",{user:req.session.user, schools:schools});
+    });
   }else {
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/addCourseAction', function(req,res) {
-  if (req.session.clearance > 1){
+  if (req.session.clearance >= 1){
     var courseNumber = req.body.courseNumber;this
     var credits =  req.body.credits;
     var description = req.body.description;
@@ -453,7 +518,7 @@ app.post(rootAppDirectory + '/addCourseAction', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/viewCourse', function(req,res) {
-  if (req.session.clearance > 1){
+  if (req.session.clearance >= 1){
     var courses = [];
     var courseQueryString = "SELECT DISTINCT schools.schoolname, departments.departmentName, courses.courseNumber, courses.courseNumber, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.DID = departments.DID AND courses.school = schools.SID ORDER BY schools.schoolname,departments.departmentName;";
     var query = client.query(courseQueryString);
@@ -468,28 +533,78 @@ app.get(rootAppDirectory + '/viewCourse', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/editCourse', function(req,res) {
-  if (req.session.clearance > 1){
-    res.render("editCourse",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 1){
+    var courses = [];
+    var courseQueryString = "SELECT DISTINCT schools.schoolname,schools.sid, departments.departmentName, departments.did, courses.courseNumber, courses.courseNumber, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.DID = departments.DID AND courses.school = schools.SID ORDER BY schools.schoolname,departments.departmentName;";
+    var query = client.query(courseQueryString);
+    query.on("row", function(row,result){
+      courses.push(row);
+    });
+    query.on("end", function(row,result){ 
+      res.render("editCourse", {user:req.session.user,courses:courses});
+    });
+  } else {
+    res.redirect("accessDenied");
+
+}});
+
+app.post(rootAppDirectory + '/editSelectedCourse', function(req,res) { 
+  if (req.session.clearance >= 1){
+    var cid =  req.body.cid;
+    var split =  cid.split("|");
+    var courseData;
+    var schools = [];
+    var courseEditString = " SELECT DISTINCT  schools.schoolname, departments.departmentName, courses.courseNumber, courses.courseNumber, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.school = " + split[0] + "  AND courses.did = " + split[1] + " AND courses.courseNumber = " + split[2] + " LIMIT 1;";
+    var query = client.query(courseEditString);
+    query.on("row",function(row,result){
+      courseData = row;
+    });
+    query.on("end",function(row,result){
+       var schoolQueryString = "SELECT DISTINCT sid, schoolName FROM Schools ORDER BY schoolName;";
+       var schoolQuery = client.query(schoolQueryString);
+       schoolQuery.on("row",function(row,result){
+         schools.push(row);  
+       });
+       schoolQuery.on("end",function(row,result){
+         res.render("editSelectedCourse", {user:req.session.user,courseData:courseData,schools:schools});
+       });    
+    });
+  } else {
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/editCourseAction', function(req,res) {
-  if (req.session.clearnace > 1){
+  if (req.session.clearance >= 1){
     res.redirect("main");
   }else{
     res.redirect("accessDenied");
 }});
 
 app.get(rootAppDirectory + '/deleteCourse', function(req,res) {
-  if (req.session.clearance > 1){
-    res.render("deleteCourse",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 1){
+    var courses = [];
+    var courseQueryString = "SELECT DISTINCT schools.schoolname, schools.sid, departments.departmentName,departments.did, courses.courseNumber, courses.courseNumber, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.DID = departments.DID AND courses.school = schools.SID ORDER BY schools.schoolname,departments.departmentName;";
+    var query = client.query(courseQueryString);
+    query.on("row", function(row,result){
+      courses.push(row);
+    });
+    query.on("end", function(row,result){ 
+      res.render("deleteCourse", {user:req.session.user,courses:courses});
+    });
+  } else {
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/deleteCourseAction', function(req,res) {
-  if (req.session.clearnace > 1){
+  if (req.session.clearance >= 1){
+    var cids =  req.body.cid;
+    if (typeof cids == 'string')
+      cids = [cids];
+    for (i = 0; i < cids.length; i++){    
+      var split =  cids[i].split("|");
+      var courseDeleteString = " DELETE FROM Courses WHERE school = " + split[0] + "  AND did = " + split[1] + " AND courseNumber = " + split[2] + ";";
+      client.query(courseDeleteString);
+    };
     res.redirect("main");
   }else{
     res.redirect("accessDenied");
@@ -497,14 +612,14 @@ app.post(rootAppDirectory + '/deleteCourseAction', function(req,res) {
 
 //User Management
 app.get(rootAppDirectory + '/addUser', function(req,res) {
-   if (req.session.clearance > 2){
+   if (req.session.clearance >= 2){
     res.render("addUser",{user:req.session.user});
   }else {
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/addUserAction', function(req,res) {
-   if (req.session.clearance > 2){
+   if (req.session.clearance >= 2){
     var emailAddress = req.body.emailAddress;
     var hashedPass = req.body.password;
     var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
@@ -524,7 +639,7 @@ app.post(rootAppDirectory + '/addUserAction', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/viewUser', function(req,res) {
-   if (req.session.clearance > 2){
+   if (req.session.clearance >= 2){
      var users = [];
      var employees = [];
      var employeeQueryString = "SELECT people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid ORDER BY people.lastName;"
@@ -547,24 +662,40 @@ app.get(rootAppDirectory + '/viewUser', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/editUser', function(req,res) {
-  if (req.session.clearance > 2){
-    res.render("editUser",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 2){
+    var users = [];
+    var employees = [];
+    var employeeQueryString = "SELECT people.pid, people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid AND employees.clearance != '3' ORDER BY people.lastName;"
+    var userQueryString = "SELECT DISTINCT people.pid, people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people, employees WHERE pid NOT IN (SELECT people.pid FROM people,employees WHERE people.pid = employees.eid) ORDER BY people.lastName;"
+    var employeeQuery = client.query(employeeQueryString);
+    employeeQuery.on("row", function(row, result){
+      employees.push(row);
+    });
+    var userQuery = client.query(userQueryString);
+    userQuery.on("row", function(row, result){
+      users.push(row);
+    });
+    employeeQuery.on("end", function(row,result){
+      userQuery.on("end", function(row,result){
+        res.render("deleteUser",{user:req.session.user,users:users,employees:employees});
+      });
+    });  
+  }else{
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/editUserAction', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance >= 2){
     res.redirect("main");
   }else{
     res.redirect("accessDenied");
 }});
 
 app.get(rootAppDirectory + '/deleteUser', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance >= 2){
     var users = [];
     var employees = [];
-    var employeeQueryString = "SELECT people.pid, people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid ORDER BY people.lastName;"
+    var employeeQueryString = "SELECT people.pid, people.firstName, people.lastName, people.emailAddress, people.gender, people.race, employees.office, employees.clearance FROM people, employees WHERE people.pid = employees.eid AND employees.clearance != '3' ORDER BY people.lastName;"
     var userQueryString = "SELECT DISTINCT people.pid, people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people, employees WHERE pid NOT IN (SELECT people.pid FROM people,employees WHERE people.pid = employees.eid) ORDER BY people.lastName;"
     var employeeQuery = client.query(employeeQueryString);
     employeeQuery.on("row", function(row, result){
@@ -584,7 +715,7 @@ app.get(rootAppDirectory + '/deleteUser', function(req,res) {
 }});
 
 app.post(rootAppDirectory + '/deleteUserAction', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance >= 2){
     var pid = req.body.pid;
     var userDeleteQuery = "DELETE FROM people WHERE pid IN (" + pid + ");";
     client.query(userDeleteQuery); 
@@ -595,14 +726,14 @@ app.post(rootAppDirectory + '/deleteUserAction', function(req,res) {
 
 //School Management
 app.get(rootAppDirectory + '/addSchool', function(req,res) {
- if (req.session.clearance > 2){
+ if (req.session.clearance >= 2){
     res.render("addSchool",{schools:externalSchools, user:req.session.user});
   }else {
     res.redirect("accessDenied")
 }});
 
 app.post(rootAppDirectory + '/addSchoolAction', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance >= 2){
     var schoolName = req.body.schoolName;
     var country = req.body.country;
     var address1 = req.body.address1;
@@ -625,9 +756,9 @@ app.post(rootAppDirectory + '/addSchoolAction', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/viewSchool', function(req,res) {
-  if (req.session.clearance > 2){
+  if (req.session.clearance >= 2){
     schools = [];
-    var schoolQueryString = "SELECT DISTINCT schoolName, country, address1, address2,city, state, zip FROM Schools ORDER BY schoolName;";
+    var schoolQueryString = "SELECT DISTINCT sid, schoolName, country, address1, address2,city, state, zip FROM Schools ORDER BY schoolName;";
     var query = client.query(schoolQueryString);
     query.on("row", function(row, result){
       schools.push(row);
@@ -640,67 +771,87 @@ app.get(rootAppDirectory + '/viewSchool', function(req,res) {
 }});
 
  app.get(rootAppDirectory + '/editSchool', function(req,res) {
-  if (req.session.clearance > 2){
-    res.render("editSchool",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 2){
+    schools = [];
+    var schoolQueryString = "SELECT DISTINCT sid, schoolName, country, address1, address2,city, state, zip FROM Schools ORDER BY schoolName;";
+    var query = client.query(schoolQueryString);
+    query.on("row", function(row, result){
+      schools.push(row);
+    });
+    query.on("end", function(row,result){
+      res.render("editSchool", {user:req.session.user,schools:schools});
+    });
+  } else {
     res.redirect("accessDenied");
+
 }});   
 
 app.post(rootAppDirectory + '/editSchoolAction', function(req,res) {
-  if (req.session.clearnace > 2){
+  if (req.session.clearnace >= 2){
     res.redirect("main");
   }else{
     res.redirect("accessDenied");
 }});
 
 app.get(rootAppDirectory + '/deleteSchool', function(req,res) {
-  if (req.session.clearance > 2){
-    res.render("deleteSchool",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 2){
+    schools = [];
+    var schoolQueryString = "SELECT DISTINCT sid, schoolName, country, address1, address2,city, state, zip FROM Schools ORDER BY schoolName;";
+    var query = client.query(schoolQueryString);
+    query.on("row", function(row, result){
+      schools.push(row);
+    });
+    query.on("end", function(row,result){
+      res.render("deleteSchool", {user:req.session.user,schools:schools});
+    });
+  } else {
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/deleteSchoolAction', function(req,res) {
-  if (req.session.clearnace > 2){
+   if (req.session.clearance >= 2){
+    var sid = req.body.sid;
+    var userDeleteQuery = "DELETE FROM schools WHERE sid IN (" + sid + ");";
+    client.query(userDeleteQuery); 
     res.redirect("main");
   }else{
-    res.redirect("accessDenied");
+    res.redirect("accessDenied"); 
 }});
 
 //Department management
 app.get(rootAppDirectory + '/addDepartment', function(req,res) {
- if (req.session.clearance > 1){
-    res.render("addDepartment",{schools:externalSchools, user:req.session.user});
+ if (req.session.clearance >= 1){
+    var queryString = "SELECT DISTINCT sid,schoolname FROM Schools ORDER BY schoolname;";
+    var query =  client.query(queryString);
+    var schools = [];
+    query.on("row",function (row,result) {
+      schools.push(row);
+    });
+    query.on("end",function (row,result) {
+      res.render("addDepartment",{schools:schools, user:req.session.user});
+   });
   }else {
     res.redirect("accessDenied")
 }});
 
 app.post(rootAppDirectory + '/addDepartmentAction', function(req,res) {
-  if (req.session.clearance > 1){
-    var schoolName = req.body.school;
-    var school;
+  if (req.session.clearance >= 1){
+    var school = req.body.school;
     var departmentName = req.body.departmentName;
-    var schoolQueryString = "SELECT SID FROM Schools WHERE schoolname = '" + school + "' LIMIT 1;";
-    var query = client.query(schoolQueryString);
-    query.on("row", function (row,result) {
-        school = row.sid;
-    });
-    query.on("end",function (result){
-      client.query('INSERT INTO departments (departmentName, school) VALUES ($1, $2);', 
-                  [departmentName,school],
-                  function(err,result) {
-                    if(err) {
-                      console.log(err);
-                    }
-                  });
-    });
+    client.query('INSERT INTO departments (departmentName, school) VALUES ($1, $2);', 
+                [departmentName,school],
+                function(err,result) {
+                  if(err) {
+                    console.log(err);
+                  }
+                }); 
     res.redirect("main");  
   }else{
     res.redirect("accessDenied");
 }});
 
 app.get(rootAppDirectory + '/viewDepartment', function(req,res) {
-  if (req.session.clearance > 1){
+  if (req.session.clearance >= 1){
     var departments = [];
     var departmentQueryString = "SELECT departments.departmentName, schools.schoolName FROM schools, departments WHERE departments.school = schools.sid ORDER BY schools.schoolname, departments.departmentname;";
     var query = client.query(departmentQueryString);
@@ -715,28 +866,42 @@ app.get(rootAppDirectory + '/viewDepartment', function(req,res) {
 }});
 
 app.get(rootAppDirectory + '/editDepartment', function(req,res) {
-  if (req.session.clearance > 1){
-    res.render("editDepartment",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 1){
+    var departments = [];
+    var departmentQueryString = "SELECT departments.did, departments.departmentName, schools.schoolName FROM schools, departments WHERE departments.school = schools.sid ORDER BY schools.schoolname, departments.departmentname;";
+    var query = client.query(departmentQueryString);
+    query.on("row",function (row,result) {
+      departments.push(row);
+    });
+    query.on("end",function (row,result) {
+      res.render("editDepartment", {user:req.session.user,departments:departments});
+    });
+  } else {
     res.redirect("accessDenied");
+
 }});
 
 app.post(rootAppDirectory + '/editDepartmentAction', function(req,res) {
-  if (req.session.clearnace > 1){
-    res.redirect("main");
-  }else{
-    res.redirect("accessDenied");
-}});
+
+});
 
 app.get(rootAppDirectory + '/deleteDepartment', function(req,res) {
-  if (req.session.clearance > 1){
-    res.render("deleteDepartment",{user:req.session.user});
-  }else {
+  if (req.session.clearance >= 1){
+    var departments = [];
+    var departmentQueryString = "SELECT departments.did, departments.departmentName, schools.schoolName FROM schools, departments WHERE departments.school = schools.sid ORDER BY schools.schoolname, departments.departmentname;";
+    var query = client.query(departmentQueryString);
+    query.on("row",function (row,result) {
+      departments.push(row);
+    });
+    query.on("end",function (row,result) {
+      res.render("deleteDepartment", {user:req.session.user,departments:departments});
+    });
+  } else {
     res.redirect("accessDenied");
 }});
 
 app.post(rootAppDirectory + '/deleteDepartmentAction', function(req,res) {
-  if (req.session.clearnace > 1){
+  if (req.session.clearance >= 1){
     res.redirect("main");
   }else{
     res.redirect("accessDenied");

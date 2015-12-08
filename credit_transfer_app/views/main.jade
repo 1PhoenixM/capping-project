@@ -6,54 +6,24 @@ block content
         td
           h2 Main Menu
           a(href='/admission/transfer/credits/app/start') Create New Course Selection
-        if clearance == 1
+        if clearance > 0
           td
             h2 Add
             a(href='/admission/transfer/credits/app/addCourse') Course
-        if clearance == 3
-          td
-            h2 Add
-            a(href='/admission/transfer/credits/app/addUser') User
           td
             h2 Edit
-            a(href='/admission/transfer/credits/app/editUser') User
-          td
-            h2 View
-            a(href='/admission/transfer/credits/app/viewUser') Users
-          td
-            h2 Delete
-            a(href='/admission/transfer/credits/app/deleteUser') User
-      tr
-        td
-          a(href='/admission/transfer/credits/app/courseEvaluation') View Saved Course Evaluation
-        if clearance == 1
-          td
-            a(href='/admission/transfer/credits/app/addDepartment') Department
-        if clearance == 3
-          td
-            a(href='/admission/transfer/credits/app/addSchool') School
-          td
-            a(href='/admission/transfer/credits/app/editSchool') School
-          td
-            a(href='/admission/transfer/credits/app/viewSchool') Schools
-          td
-            a(href='/admission/transfer/credits/app/deleteSchool') School
-      tr
-        td
-          a(href='/admission/transfer/credits/app/changePassword') Change Password
-        if clearance == 3
-          td
-            a(href='/admission/transfer/credits/app/addCourse') Course
-          td
             a(href='/admission/transfer/credits/app/editCourse') Course
           td
+            h2 View
             a(href='/admission/transfer/credits/app/viewCourse') Courses
           td
-            a(href='/admission/transfer/credits/app/deleteCourse') Course
+            h2 Delete
+            a(href='/admission/transfer/credits/app/deleteCourse') Courses
       tr
         td
-          br
-        if clearance == 3
+          form(id='sel',action='/admission/transfer/credits/app/courseSelection',method='POST',onclick='form.submit()',style='display:none;')
+          a(onclick='document.getElementById("sel").submit()') View Saved Course Evaluation
+        if clearance > 0
           td
             a(href='/admission/transfer/credits/app/addDepartment') Department
           td
@@ -61,5 +31,29 @@ block content
           td
             a(href='/admission/transfer/credits/app/viewDepartment') Departments
           td
-            a(href='/admission/transfer/credits/app/deleteDepartment') Department
+            a(href='/admission/transfer/credits/app/deleteDepartment') Departments
+      tr
+        td
+          a(href='/admission/transfer/credits/app/changePassword') Change Password
+        if clearance > 1
+          td
+            a(href='/admission/transfer/credits/app/addSchool') School
+          td
+            a(href='/admission/transfer/credits/app/editSchool') School
+          td
+            a(href='/admission/transfer/credits/app/viewSchool') Schools
+          td
+            a(href='/admission/transfer/credits/app/deleteSchool') Schools
+      if clearance > 1
+        tr
+          td
+            br
+          td
+            a(href='/admission/transfer/credits/app/addUser') User
+          td
+            a(href='/admission/transfer/credits/app/editUser') User
+          td
+            a(href='/admission/transfer/credits/app/viewUser') Users
+          td
+            a(href='/admission/transfer/credits/app/deleteUser') Users
     br

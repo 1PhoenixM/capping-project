@@ -8,10 +8,9 @@ block content
         tr
           td School: 
           td
-            select(id='schools',name='schools')
-              option(value="Marist", selected=selected)= "Marist" 
+            select(id='schools',name='schools',onchange='getDepartments("#{school.schoolname}")')
               each school in schools
-                option(value=school, selected=selected)= school
+                option(value=school.sid, selected=selected)= school.schoolname
         tr
           td Course Number:
           td

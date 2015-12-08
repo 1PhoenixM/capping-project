@@ -1,9 +1,9 @@
 //Given a school and a department, gets all its course numbers and renders a dropdown
 //Accepts a school name as a string
-function getCourseNumbers(school,forLine){
+function getCourseNumbers(school,forLine,alreadyHaveTheCourse,courseNumber){
 	//First get department chosen by the user.
 	selectedDept = $('#dept' + forLine).val(); //.find(":selected").text();
-
+        
 	//Make a call to the JSON API providing both department and school
 	$.getJSON( "/api/courseNumbers/" + selectedDept + "/" + school, function( data ) {
 	  
@@ -41,12 +41,56 @@ function getCourseNumbers(school,forLine){
 		//Update existing course dropdown with new values.
 		$('#courseSelector' + forLine).html(coursesDropdown.join( "" ));
 	  }
+
+	  //Get title as well
+	  /*if($('#coursetitle'+forLine).length === 0){
+	 	 getCourseTitle(school,forLine);
+	  }*/
+	  
+	  //this may be running
+	  if(alreadyHaveTheCourse === true){
+		optionCounter2 = 0;
+		$('#courseSelector'+forLine+' option').each(function()
+		{       //get this to supply the real course then continue to the rest of the rows
+			//console.log($(this).val() + "  " + courseNumber);
+			if($(this).val() === courseNumber){
+				$('#courseSelector'+forLine+' option:eq(' + optionCounter2 + ')').prop('selected', true);
+				getCourseTitle(school,forLine);
+				return;
+			}
+			optionCounter2++;
+		});
+
+	  }
 	  
 	});
 }
 
+function getDepartments(school){
+
+	$.getJSON("/api/departments/" + school, function (data) {
+		var depts  =[];
+		depts = data.departments;
+		var deptDropdown = [];
+
+		for (var i = 0; i < depts.length; i++){
+			deptDropdown.push('<option>' + depts[i] + '</option>');
+		}
+
+		$( "<select/>", {
+			"class": "deptSelector",
+			"id": "dept",
+			"style": "display:inline",
+			"name": "department",
+			html: deptDropdown.join( "" )
+		  }).appendTo( "body" );
+
+
+	});
+}
+
 //Adds a new course selection line
-function addNewLine(school){
+function addNewLine(school,alreadyHaveTheCourse,courseNumber,courseDept){
 	
 	//Make a call to the JSON API to get a list of departments for the school
 	$.getJSON( "/api/departments/" + school, function( data ) {
@@ -71,13 +115,28 @@ function addNewLine(school){
 			"name": "course" + count,
 			html: deptDropdown.join( "" )
 		  }).appendTo( "#selectors" );
-	
-		$(".deptSelector").bind("change", function(){
-			getCourseNumbers(school,count);			
+
+		$("#dept"+count).bind("change", function(){
+			getCourseNumbers(school,count,false,'');			
 		});
 
 		//Create course number dropdown
-	        getCourseNumbers(school,count);
+		if(alreadyHaveTheCourse === true){
+			optionCounter = 0;
+			$('#dept'+count+' option').each(function()
+			{
+				//console.log($(this).val() + "  " + courseDept + " gg");
+				if($(this).val() === courseDept){
+					$('#dept'+count+' option:eq(' + optionCounter + ')').prop('selected', true);
+					return;
+				}
+				optionCounter++;
+			});
+			getCourseNumbers(school,count,true,courseNumber);
+		}
+		else{
+	        	getCourseNumbers(school,count,false,'');
+		}
 
 		//Remove the old new line button
 		//$('#plus').remove();
@@ -127,6 +186,12 @@ function addNewLine(school){
 
 //Removes the specified line or row
 function removeLine(count,school){
+	if($('#toBeDeleted').length > 0){
+		$('#toBeDeleted').val($('#toBeDeleted').val()+$("#dept"+count).val() + "_");
+		$('#toBeDeleted').val($('#toBeDeleted').val()+$("#courseSelector"+count).val() + "/");
+		console.log($('#toBeDeleted').val());
+	}
+
 	$("#dept"+count).remove();
 	$("#courseSelector"+count).remove();
 	/*if($(".deptSelector").length >= 2){
@@ -156,18 +221,11 @@ function preselectCourses(courses,school){
 				}
 				optionCounter++;
 			});
-			getCourseNumbers(school,0);
-			$('#courseSelector0 option').each(function()
-			{       //get this to supply the real course then continue to the rest of the rows
-				if($(this).val() === courseParts[1]){
-					$('#courseSelector0 option:eq(' + optionCounter2 + ')').prop('selected', true);
-					return;
-				}
-				optionCounter2++;
-			});
-		}
+			getCourseNumbers(school,0,true,courseParts[1]);
+			}
 		else{
-			addNewLine(school,i);
+			addNewLine(school,true,courseParts[1],courseParts[0]);
+			//getCourseNumbers(school,i,true,courseParts[1]);
 		}
 	}
      }

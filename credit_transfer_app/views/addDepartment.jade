@@ -9,9 +9,8 @@ block content
           td School: 
           td
             select(id='schools',name='schools')
-              option(value="Marist", selected=selected)= "Marist" 
               each school in schools
-                option(value=school, selected=selected)= school
+                option(value=school.sid, selected=selected)= school.schoolname
         tr
           td Department Name:
           td
