@@ -4,7 +4,9 @@ block content
   if !school
    - var school = "DCC";
   if !initialCourses
-   - var initialCourses = ["ACC","101"];
+   - var initialCourses = ["101","102","104","201"];
+  if !depts
+   - var depts = ["ACC","BIO","CHEM","CIS","MATH","PHY"];
   body(onload='preselectCourses("#{userCourses}", "#{school}")')
     h2 Course Selection
     script(src='/static/js/dynamicJSON.js')

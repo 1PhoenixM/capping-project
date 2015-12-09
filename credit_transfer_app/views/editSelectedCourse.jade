@@ -4,36 +4,41 @@ block content
     h2 Edit Course
     br
     form(name = 'editSelectedCourse', action='/admission/transfer/credits/app/editCourseAction',method='POST')
+      input(type='hidden', name='cid', value=cid)
       table(style='width:50%')
         tr
-          td School: 
-          td
-            select(id='schools',name='schools')
-              each school in schools
-                option(value=school.sid, selected=selected)= school.schoolname
+          td School:
+          td= courseData.schoolname
         tr
           td Department: 
           td
-            select(id='departments',name='departments')
+            select(id='department',name='department')
+              option(value=courseData.did, selected=selected) No Change
               each department in departments
                 option(value=department.did, selected=selected)= department.departmentname
         tr
           td Course Name:
           td
-            input(type='text', name='courseName', value=courseData.coursename, align='right')
+            input(type='text', name='courseName',align='right', value=courseData.coursename)
         tr
           td Course Number:
           td
-            input(type='text', name='courseNumber', value=courseData.coursenumber, align='right')
+            input(type='text', name='courseNumber', align='right', value=courseData.coursenumber)
         tr
           td Credits:
           td
-            input(type='text', name='credits', value=courseData.credits, align='right')
+            input(type='text', name='credits', align='right', value=courseData.credits)
         tr
           td Description:
           td
-            textarea(rows='4', cols='50', name='description', value=courseData.description, align='right')
+            textarea(rows='4', cols='50', name='description', align='right',)= courseData.description
+        tr
+          td Active Status
+          td
+            select(id='isActive',name='isActive')
+              option(value='True', selected=selected) True
+              option(value='False' selected=selected) False
         tr
           td
-            input(type='submit',value='Add Course')
+            input(type='submit',value='Edit Course')
  

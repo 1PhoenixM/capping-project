@@ -1,16 +1,21 @@
+//Authors: Conner Ferguson, Melissa Iori, Brian Main
+//To run: node index.js
+//This is the main file that runs the "server" for the credit transfer app for Marist College.
+
+//Dependencies for Express framework
 var express = require('express');
 var session = require('express-session');
 var app = express();
-var fs = require('fs');
-var path = require('path');
-var pg = require("pg");
-var crypto = require('crypto');
-var rootDirectory = '/admission/transfer/credits';
-var rootAppDirectory = '/admission/transfer/credits/app';
-var conString = "pg://postgres:Candi7@localhost:5432/credit_transfer";
-var client = new pg.Client(conString);
+var fs = require('fs'); //filesystem
+var path = require('path'); //url decoder
+var pg = require("pg"); //postgres adapter
+var crypto = require('crypto');  //crypto
+var rootDirectory = '/admission/transfer/credits'; //Main root directory to get to the app
+var rootAppDirectory = '/admission/transfer/credits/app'; //All views are found under this path
+var conString = "pg://postgres:Candi7@localhost:5432/credit_transfer";  //Postgres DB connection (DB is on the same server)
+var client = new pg.Client(conString); //Actual DB connection, starts automatically
 client.connect();
-app.use(express.static(__dirname + '/static'));
+app.use(express.static(__dirname + '/static')); //Static assets served here
 app.use('/static', express.static(__dirname + '/static'));
 app.use('/admission/transfer/static', express.static(__dirname + '/static'));
 app.use('/admission/transfer/credits/static', express.static(__dirname + '/static'));
@@ -249,6 +254,7 @@ app.post(rootAppDirectory + '/courseSelection', function (req, res) {
 		var courseQueryObj = client.query(courseQuery);
 		courseQueryObj.on("row", function (row, result){
 			userCourses += row.departmentname + "_" + row.coursenumber + "/";
+			//console.log(userCourses);
 		 });
 		 courseQueryObj.on("end", function (result){
 			userCourses = userCourses.substring(0,userCourses.length-1);
@@ -461,8 +467,9 @@ function saveCoursesThenRender(userCourses, isEmpty, messages, theCourses, chose
 					});
 					hasChecked = true;
 				}
-				client.query("INSERT INTO UsersToCourses SELECT $1, $2, $3, $4 WHERE NOT EXISTS ("+ checkQuery  +")", [uid,2,did,userCourses[course][1]],
+				client.query("INSERT INTO UsersToCourses SELECT $1, $2, $3, $4 WHERE NOT EXISTS ("+ checkQuery  +")", [2,did,userCourses[course][1],uid],
 				function(err,result){
+					//console.log(did);
 					numberOfCourses--; 
 					if(err) 
 						{console.log(err)}
@@ -554,20 +561,21 @@ app.post(rootAppDirectory + '/editSelectedCourse', function(req,res) {
     var cid =  req.body.cid;
     var split =  cid.split("|");
     var courseData;
-    var schools = [];
-    var courseEditString = " SELECT DISTINCT  schools.schoolname, departments.departmentName, courses.courseNumber, courses.courseNumber, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.school = " + split[0] + "  AND courses.did = " + split[1] + " AND courses.courseNumber = " + split[2] + " LIMIT 1;";
+    var departments = [];
+    var courseEditString = " SELECT DISTINCT  schools.schoolname, departments.departmentName, courses.courseNumber,courses.did, courses.description, courses.courseName, courses.credits, courses.isActive FROM courses, schools, departments WHERE courses.school = " + split[0] + "  AND courses.did = " + split[1] + " AND courses.courseNumber = " + split[2] + " LIMIT 1;";
     var query = client.query(courseEditString);
     query.on("row",function(row,result){
       courseData = row;
     });
     query.on("end",function(row,result){
-       var schoolQueryString = "SELECT DISTINCT sid, schoolName FROM Schools ORDER BY schoolName;";
-       var schoolQuery = client.query(schoolQueryString);
-       schoolQuery.on("row",function(row,result){
-         schools.push(row);  
+       var departmentQueryString = "SELECT DISTINCT did, departmentName FROM Departments WHERE school = " + split[0] + " ORDER BY departmentName;";
+       var departmentsQuery = client.query(departmentQueryString);
+       departmentsQuery.on("row",function(row,result){
+         departments.push(row);  
        });
-       schoolQuery.on("end",function(row,result){
-         res.render("editSelectedCourse", {user:req.session.user,courseData:courseData,schools:schools});
+       departmentsQuery.on("end",function(row,result){
+         console.log(split);
+         res.render("editSelectedCourse", {user:req.session.user,courseData:courseData,departments:departments,cid:cid});
        });    
     });
   } else {
@@ -576,7 +584,25 @@ app.post(rootAppDirectory + '/editSelectedCourse', function(req,res) {
 
 app.post(rootAppDirectory + '/editCourseAction', function(req,res) {
   if (req.session.clearance >= 1){
-    res.redirect("main");
+    var cid = req.body.cid;
+    var split = cid.split("|");
+    var courseNumber = req.body.courseNumber;
+    var department = req.body.department;
+    var description = req.body.description;
+    var courseName = req.body.courseName;
+    var credits = req.body.credits;
+    var isActive = req.body.isActive;
+    console.log(cid);
+    var updateString = "UPDATE Courses SET courseNumber='" + courseNumber  +"',did=" + department +  ",description='" + description + "',courseName='" + courseName + "',credits='" + credits  + "',isActive=" + isActive + " WHERE school=" + split[0] + " AND did=" + split[1] + " AND courseNumber = " + split[2] + ";";
+    console.log(updateString);
+    client.query(updateString,
+                function(err,result) {
+                  if(err) {
+                    console.log(err);
+                  }
+                }); 
+   res.redirect("main");  
+
   }else{
     res.redirect("accessDenied");
 }});
@@ -686,8 +712,17 @@ app.get(rootAppDirectory + '/editUser', function(req,res) {
 }});
 
 app.post(rootAppDirectory + '/editSelectedUser', function(req,res) {
-  if (req.session.clearance >= 2){
-    res.render("editSelectedUser");
+if (req.session.clearance >= 2){
+    var pid = req.body.pid;
+    var userData;
+    var userQueryString = "SELECT DISTINCT people.pid, people.firstName, people.lastName, people.emailAddress, people.state, people.gender, people.age, people.race FROM people WHERE pid = " + pid + " LIMIT 1;"
+    var userQuery = client.query(userQueryString);
+    userQuery.on("row",function(row,result){
+      userData = row;
+    });
+    userQuery.on("end",function(row,result){
+      res.render("editSelectedUser",{user:req.session.user,userData:userData});
+    });
   }else{
     res.redirect("accessDenied");
 }});
@@ -794,7 +829,7 @@ app.get(rootAppDirectory + '/viewSchool', function(req,res) {
 
 }});   
 
-app.post(rootAppDIrectory + '/editSelectedSchool', function(req,res) {
+app.post(rootAppDirectory + '/editSelectedSchool', function(req,res) {
   if (req.session.clearance >= 2){
     var sid = req.body.sid;
     var schoolData;
@@ -821,6 +856,7 @@ app.post(rootAppDirectory + '/editSchoolAction', function(req,res) {
     var state = req.body.state;
     var zip = req.body.zip;
     var updateString = "UPDATE Schools SET schoolName='" + schoolName + "',country='" + country + "',address1='" + address1 + "',address2='" + address2  + "',city='"+ city + "',state='" + state + "', zip=" + zip + "  WHERE SID=" + sid + ";";
+    console.log(updateString);
     client.query(updateString,
                 function(err,result) {
                   if(err) {

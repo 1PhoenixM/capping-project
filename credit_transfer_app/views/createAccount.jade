@@ -19,9 +19,13 @@ block content
             td
               input(type='password', name='confirmPassword', align='right')
           tr
+            td 
+            td Optional Information: 
+          tr
             td School: 
             td 
               select(id='schools',name='schools')
+                option(value=' ', selected=selected) Select School
                 each school in schools
                   option(value=school, selected=selected)= school
           tr
@@ -33,9 +37,39 @@ block content
             td 
               input(type='text', name='lastName', align='right')
           tr
+            td Current Age: 
+            td 
+              input(type='number', name='age', max="150", min="1", align='right')
+          tr
+            td Gender:
+            td
+              select(id='gender', name='gender')
+                option(value= ' ', selected=selected) Select Gender
+                option(value= 'M', selected=selected) Male
+                option(value= 'F', selected=selected) Female
+                option(value= '?', selected=selected) Other
+          tr
+            td Race:
+            td
+              select(id='race', name='race') 
+                option(value= ' ', selected=selected) Select Race
+                option Arctic (Siberian, Eskimo)
+                option Caucasian (European)
+                option Caucasian (Indian)
+                option Caucasian (Middle East)
+                option Caucasian (North African, Other)
+                option Indigenous Australian
+                option Native American
+                option North East Asian (Mongol, Tibetan, Korean Japanese, etc)
+                option Pacific (Polynesian, Micronesian, etc)
+                option South East Asian (Chinese, Thai, Malay, Filipino, etc)
+                option West African, Bushmen, Ethiopian
+                option Other Race
+          tr
             td State:
             td
               select(id='state', name='state')
+                option(value='  ') Select State 
                 option(value='AL') Alabama
                 option(value='AK') Alaska
                 option(value='AZ') Arizona

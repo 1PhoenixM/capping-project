@@ -43,9 +43,9 @@ function getCourseNumbers(school,forLine,alreadyHaveTheCourse,courseNumber){
 	  }
 
 	  //Get title as well
-	  /*if($('#coursetitle'+forLine).length === 0){
+	  //if($('#coursetitle'+forLine).length === 0){
 	 	 getCourseTitle(school,forLine);
-	  }*/
+	  //}
 	  
 	  //this may be running
 	  if(alreadyHaveTheCourse === true){
@@ -66,6 +66,7 @@ function getCourseNumbers(school,forLine,alreadyHaveTheCourse,courseNumber){
 	});
 }
 
+//Gets a departments dropdown for a school
 function getDepartments(school){
 
 	$.getJSON("/api/departments/" + school, function (data) {
@@ -148,6 +149,8 @@ function addNewLine(school,alreadyHaveTheCourse,courseNumber,courseDept){
 		//Remove old new line button
 		//$('#plus'+pastLine).remove();
 
+		getCourseTitle(school,count);
+
 		//Create a remove button for this row
 		$( "<button/>", {
 			"value": count + "",
@@ -202,6 +205,7 @@ function removeLine(count,school){
 	$("#break"+count).remove();
 }
 
+//Preselect courses if they are already known (as in, the user is logged in)
 function preselectCourses(courses,school){
 	if(courses === "Test"){
 
@@ -231,6 +235,7 @@ function preselectCourses(courses,school){
      }
 }
 
+//Get or update the course title for a certain row
 function getCourseTitle(school,count){
 	dept = $('#dept'+count).val();
 	courseNumber = $('#courseSelector'+count).val();
@@ -243,7 +248,7 @@ function getCourseTitle(school,count){
 			}).insertAfter('#courseSelector'+count);
 		}
 		else{
-			$('#coursetitle'+count).html = data.title;
+			$('#coursetitle'+count).html(data.title);
 		}	
 	});
 }

@@ -40,7 +40,7 @@ block content
         each user in users
           tr
             td
-              input(type='checkbox', name='pid', value=user.pid)
+              input(type='radio', name='pid', value=user.pid)
             td= user.firstname
             td= user.lastname
             td= user.gender
