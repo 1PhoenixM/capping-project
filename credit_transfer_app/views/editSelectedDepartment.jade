@@ -1,22 +1,19 @@
 extends ./wrapper.jade
 
 block content
-    h2 Add Department
+    h2 Edit Department
     br
-    form(name = 'addDepartment', action='/admission/transfer/credits/app/addDepartmentAction',method='POST')
+    form(name = 'editDepartment', action='/admission/transfer/credits/app/editDepartmentAction',method='POST')
+      input(type='hidden', name='did', value=departmentData.did)
       table(style='width:50%')
         tr
           td School: 
-          td
-            select(id='schools',name='schools')
-              option(value="Marist", selected=selected)= "Marist" 
-              each school in schools
-                option(value=school, selected=selected)= school
+          td= departmentData.schoolname 
         tr
           td Department Name:
           td
-            input(type='text', name='departmentName', align='right')
+            input(type='text', name='departmentName', align='right' value=departmentData.departmentname)
         tr
           td
-            input(type='submit',value='Add Department')
+            input(type='submit',value='Edit Department')
  

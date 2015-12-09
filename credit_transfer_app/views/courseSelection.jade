@@ -1,6 +1,10 @@
 extends ./wrapper.jade
 
 block content
+  if !school
+   - var school = "DCC";
+  if !initialCourses
+   - var initialCourses = ["ACC","101"];
   body(onload='preselectCourses("#{userCourses}", "#{school}")')
     h2 Course Selection
     script(src='/static/js/dynamicJSON.js')
@@ -27,7 +31,7 @@ block content
           select(id='dept0',class='deptSelector',onchange='getCourseNumbers("#{school}",0,false,"")',name='course0')
             each department in depts
               option= department
-          select(id='courseSelector0',class='courseSelector',onchange='getCourseTitle("#{school}",0)')
+          select(id='courseSelector0',class='courseSelector',onchange='getCourseTitle("#{school}",0)',name='course0')
             each course in initialCourses
               option= course
           br

@@ -22,7 +22,7 @@ block content
       tr
         td
           form(id='sel',action='/admission/transfer/credits/app/courseSelection',method='POST',onclick='form.submit()',style='display:none;')
-          a(onclick='document.getElementById("sel").submit()') View Saved Course Evaluation
+          a(onclick='document.getElementById("sel").submit()',style='color:#B31B1B') View Saved Course Evaluation
         if clearance > 0
           td
             a(href='/admission/transfer/credits/app/addDepartment') Department

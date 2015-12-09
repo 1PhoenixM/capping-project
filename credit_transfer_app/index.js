@@ -263,16 +263,17 @@ function deleteCourses(toBeDeleted,uid){
 	theCourses = toBeDeleted.split("/");
 	courseDept = '';
 	courseNumber = '';
-	(function (courseDept,courseNumber){
 		for(var i = 0; i < theCourses.length; i++){
+			(function (courseDept,courseNumber){
 			courseDept = theCourses[i].split("_")[0];
 			courseNumber = theCourses[i].split("_")[1];
-			client.query("DELETE FROM UsersToCourses WHERE PID = $1 AND DID IN (SELECT DID FROM Departments WHERE departmentName = $2) AND courseNumber = $3",[uid,courseDept,courseNumber],
+			//console.log(courseNumber);
+			client.query("DELETE FROM UsersToCourses WHERE PID IN (SELECT PID FROM People WHERE emailAddress = $1) AND DID IN (SELECT DID FROM Departments WHERE departmentName = $2) AND courseNumber = $3",[uid,courseDept,courseNumber],
 			function(err,result){
 				if(err) {console.log(err)}
 			});
+			}) (courseDept,courseNumber);
 		}
-	}) (courseDept,courseNumber);
 }	
 
 //JSON API to get data after the page has loaded, say a list of course numbers for a department the user selected.
@@ -335,7 +336,7 @@ app.get('/api/' + 'coursetitles/:school/:dept/:coursenumber', function(req, res)
 //If user entered only courses and selected no major, shows their personal percentage completion for all Marist majors in order, based on courses entered.
 //If user entered both courses and selected a major, shows a credit evaluation for that particular major with those courses.
 app.post(rootAppDirectory + '/courseEvaluation', function (req, res) {
-    console.log(req.body);
+    //console.log(req.body);
     //query = "";
     chosenMajor = req.body.major;
     delete req.body.major;
@@ -677,13 +678,20 @@ app.get(rootAppDirectory + '/editUser', function(req,res) {
     });
     employeeQuery.on("end", function(row,result){
       userQuery.on("end", function(row,result){
-        res.render("deleteUser",{user:req.session.user,users:users,employees:employees});
+        res.render("editUser",{user:req.session.user,users:users,employees:employees});
       });
     });  
   }else{
     res.redirect("accessDenied");
 }});
 
+app.post(rootAppDirectory + '/editSelectedUser', function(req,res) {
+  if (req.session.clearance >= 2){
+    res.render("editSelectedUser");
+  }else{
+    res.redirect("accessDenied");
+}});
+ 
 app.post(rootAppDirectory + '/editUserAction', function(req,res) {
   if (req.session.clearance >= 2){
     res.redirect("main");
@@ -786,9 +794,40 @@ app.get(rootAppDirectory + '/viewSchool', function(req,res) {
 
 }});   
 
+app.post(rootAppDIrectory + '/editSelectedSchool', function(req,res) {
+  if (req.session.clearance >= 2){
+    var sid = req.body.sid;
+    var schoolData;
+    var schoolQueryString = "SELECT * FROM Schools where sid = " + sid + "LIMIT 1;";
+    var query = client.query(schoolQueryString);
+    query.on("row", function(row, result){
+      schoolData = row;
+    });
+    query.on("end", function(row, result){
+      res.render("editSelectedSchool", {user:req.session.user,schoolData:schoolData});
+    });
+  }else{
+    res.redirect("accessDenied");
+}});
+
 app.post(rootAppDirectory + '/editSchoolAction', function(req,res) {
-  if (req.session.clearnace >= 2){
-    res.redirect("main");
+  if (req.session.clearance >= 2){
+    var sid = req.body.sid;
+    var schoolName = req.body.schoolName;
+    var country = req.body.country;
+    var address1 = req.body.address1;
+    var address2 = req.body.address2;
+    var city = req.body.city;
+    var state = req.body.state;
+    var zip = req.body.zip;
+    var updateString = "UPDATE Schools SET schoolName='" + schoolName + "',country='" + country + "',address1='" + address1 + "',address2='" + address2  + "',city='"+ city + "',state='" + state + "', zip=" + zip + "  WHERE SID=" + sid + ";";
+    client.query(updateString,
+                function(err,result) {
+                  if(err) {
+                    console.log(err);
+                  }
+                }); 
+   res.redirect("main");  
   }else{
     res.redirect("accessDenied");
 }});
@@ -881,9 +920,37 @@ app.get(rootAppDirectory + '/editDepartment', function(req,res) {
 
 }});
 
-app.post(rootAppDirectory + '/editDepartmentAction', function(req,res) {
+app.post(rootAppDirectory + '/editSelectedDepartment', function(req,res) {
+  if (req.session.clearance >= 1){
+    var did = req.body.did; 
+    var departmentData;
+    var departmentQueryString = "SELECT departments.did, departments.departmentName, schools.schoolName FROM schools, departments WHERE departments.did = " + did  + " AND schools.sid = departments.school LIMIT 1;";
+    var query = client.query(departmentQueryString);
+    query.on("row",function (row,result) {
+      departmentData = row;
+    });
+    query.on("end",function (row,result) {
+      res.render("editSelectedDepartment", {user:req.session.user,departmentData:departmentData});
+      });
+  } else {
+    res.redirect("accessDenied");
+}});
 
-});
+app.post(rootAppDirectory + '/editDepartmentAction', function(req,res) {
+  if (req.session.clearance >= 1){
+    var departmentName = req.body.departmentName;
+    var departmentID = req.body.did;
+    var updateString = "UPDATE departments SET departmentName='" + departmentName + "' WHERE DID=" + departmentID + ";";
+    client.query(updateString,
+                function(err,result) {
+                  if(err) {
+                    console.log(err);
+                  }
+                }); 
+    res.redirect("main");  
+  }else{
+    res.redirect("accessDenied");
+}});
 
 app.get(rootAppDirectory + '/deleteDepartment', function(req,res) {
   if (req.session.clearance >= 1){
@@ -910,6 +977,64 @@ app.post(rootAppDirectory + '/deleteDepartmentAction', function(req,res) {
 app.get(rootAppDirectory + '/accessDenied', function (req, res) {
   res.render("accessDenied", {user:req.session.user});
 });
+
+
+//Equivalency Section
+app.get(rootAppDirectory + '/addEquivalency', function(req,res) {
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + 'addEquivalencyAction', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + 'viewEquivalency', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + 'editEquivalency', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + 'editSelectedEquivalency', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + 'editEquivalencyAction', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.get(rootAppDirectory + 'deleteEquivalency', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
+
+app.post(rootAppDirectory + 'deleteEquivalencyAction', function(req,res){
+  if (req.session.clearance >= 1){
+    res.redirect("main");
+  }else{
+    res.redirect("accessDenied");
+}});
 
 app.get(rootAppDirectory + '/logout', function (req, res) {
   req.session.user = null;
