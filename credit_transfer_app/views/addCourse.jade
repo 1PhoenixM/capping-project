@@ -8,9 +8,18 @@ block content
         tr
           td School: 
           td
-            select(id='schools',name='schools',onchange='getDepartments("#{school.schoolname}")')
+            select(id='schools', name='schools', onchange='getDepartments(selected.schoolname)')
               each school in schools
                 option(value=school.sid, selected=selected)= school.schoolname
+        tr
+          td Department:
+          td 
+            select(id='department', name='department')
+              option ACC
+              option BIO
+              option CMPT
+              option MATH
+              option PHYS
         tr
           td Course Number:
           td

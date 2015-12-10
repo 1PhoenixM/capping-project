@@ -103,18 +103,18 @@ app.post(rootAppDirectory + '/createAccountAction', function ( req, res) {
   //Optional vars
   var firstName = req.body.firstName;
   var lastName = req.body.lastName;
-  //var addressLine1 = req.body.addressLine1;
-  //var addressLine2 = req.body.addressLine2;
   var state = req.body.state;
   var school = req.body.school;
-
+  var gender = req.body.gender;
+  var race = req.body.race;
+  var age = req.body.age;
   var schoolQueryString = "SELECT SID from SCHOOLS WHERE schoolname = '" + school + "' LIMIT 1;";
   var query = client.query(schoolQueryString); 
   query.on("row", function(row,result){
     schoolID = row.SID;
   });
-  client.query('INSERT INTO people (emailAddress, password, firstname, lastname, state) VALUES ($1, $2, $3, $4, $5);',
-    [email,doubleHashPass,firstName,lastName,state],
+  client.query('INSERT INTO people (emailAddress, password, firstname, lastname, state, gender, race, age) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);',
+    [email,doubleHashPass,firstName,lastName,state,gender,race,age],
     function(err,result) {
       if(err) {
         console.log(err);
@@ -652,9 +652,11 @@ app.post(rootAppDirectory + '/addUserAction', function(req,res) {
     var doubleHashPass = crypto.createHash('sha256').update(hashedPass).digest("hex");
     var firstName = req.body.firstName;
     var lastName = req.body.lastName;
-    var clearance = req.body.clearance;
+    var gender = req.body.gender;
+    var race = req.body.race;
     var office = req.body.office;
-    client.query('INSERT INTO people (emailAddress, password, firstname, lastname) VALUES ($1, $2, $3, $4) RETURNING pid;', [emailAddress, doubleHashPass, firstName, lastName],
+    var clearance = req.body.clearance;
+    client.query('INSERT INTO people (emailAddress, password, firstName, lastName, gender, race) VALUES ($1, $2, $3, $4, $5, $6) RETURNING pid;', [emailAddress, doubleHashPass, firstName, lastName, gender, race],
     function(err,result){
       if(err){
         console.log(err);
@@ -729,7 +731,18 @@ if (req.session.clearance >= 2){
  
 app.post(rootAppDirectory + '/editUserAction', function(req,res) {
   if (req.session.clearance >= 2){
-    res.redirect("main");
+    var pid = req.body.pid;
+    var emailAddress = req.body.emailAddress;
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var updateString = "UPDATE people SET emailAddress='" + emailAddress + "', firstName = '" + firstName + "', lastName = '" + lastName + "' WHERE PID=" + pid + ";";
+    client.query(updateString,
+                function(err,result) {
+                  if(err) {
+                    console.log(err);
+                  }
+                }); 
+    res.redirect("main");  
   }else{
     res.redirect("accessDenied");
 }});
