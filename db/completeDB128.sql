@@ -1,3 +1,5 @@
+INSERT INTO Schools VALUES (1, 'Marist College'), (2, 'Dutchess Community College');
+
 INSERT INTO Departments VALUES
 (1,'MATH',1),
 (2,'CMPT',1),
@@ -178,7 +180,8 @@ INSERT INTO CoursesToMajors VALUES
 ('Applied Mathematics',1,2,'435L'),
 ('Applied Mathematics',1,2,'404L'),
 ('Applied Mathematics',1,2,'446L'),
-('Applied Mathematics',1,1,'205L');--INSERT INTO CourseEquivalencies(maristDID, maristNumber, maristSchool, externalSchool, externalDID, externalNumber) 
+('Applied Mathematics',1,1,'205L');
+--INSERT INTO CourseEquivalencies(maristDID, maristNumber, maristSchool, externalSchool, externalDID, externalNumber) 
 VALUES (1, '241L', 1, 2, 8, NULL);--
 
 INSERT INTO CourseEquivalencies(maristDID, maristNumber, maristSchool, externalSchool, externalDID, externalNumber) 
