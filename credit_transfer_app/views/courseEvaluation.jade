@@ -27,7 +27,7 @@ block content
     each message in messages
       p= message
     form(action='/admission/transfer/credits/app/courseSelection',method='POST',style='display:none;',id='sel')
-    a(onclick='document.getElementById("sel").submit()',style='color:#B31B1B') Reselect Courses
+    a(onclick='document.getElementById("sel").submit()',style='color:#B31B1B;cursor:pointer;') Reselect Courses
     br
     a(href='http://www.take-a-screenshot.org/') Print Report
     br

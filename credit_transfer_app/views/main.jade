@@ -22,7 +22,7 @@ block content
       tr
         td
           form(id='sel',action='/admission/transfer/credits/app/courseSelection',method='POST',onclick='form.submit()',style='display:none;')
-          a(onclick='document.getElementById("sel").submit()',style='color:#B31B1B') View Saved Course Evaluation
+          a(onclick='document.getElementById("sel").submit()',style='color:#B31B1B;cursor:pointer;') View Saved Course Evaluation
         if clearance > 0
           td
             a(href='/admission/transfer/credits/app/addDepartment') Department
@@ -35,7 +35,19 @@ block content
       tr
         td
           a(href='/admission/transfer/credits/app/changePassword') Change Password
-        if clearance > 1
+        if clearance > 0
+          td
+            a(href='/admission/transfer/credits/app/addEquivalency') Equivalency
+          td
+            a(href='/admission/transfer/credits/app/editEquivalency') Equivalency
+          td
+            a(href='/admission/transfer/credits/app/viewEquivalency') Equivalencies
+          td
+            a(href='/admission/transfer/credits/app/deleteEquivalency') Equivalencies
+      if clearance > 1
+        tr
+          td
+            br
           td
             a(href='/admission/transfer/credits/app/addSchool') School
           td
@@ -44,7 +56,6 @@ block content
             a(href='/admission/transfer/credits/app/viewSchool') Schools
           td
             a(href='/admission/transfer/credits/app/deleteSchool') Schools
-      if clearance > 1
         tr
           td
             br

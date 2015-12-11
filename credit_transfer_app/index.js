@@ -81,7 +81,11 @@ app.get(rootAppDirectory, function (req, res) {
 //Wireframe #2
 //The initial start page that greets the user to either log in or choose a school.
 app.get(rootAppDirectory + '/start', function (req, res) {
+  if (req.session.user){
+    res.redirect(rootAppDirectory + '/main');
+  }else{
     res.render("startPage", {schools:externalSchools, user:req.session.user});
+  }
 });
 
 
