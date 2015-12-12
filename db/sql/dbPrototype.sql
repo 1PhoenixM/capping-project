@@ -51,7 +51,7 @@ UID int references People(PID) primary key
 -- Stores all employee users (all of which are also people) --
 CREATE TABLE Employees
 (
-EID int references People(PID) primary key ON DELETE CASCADE,
+EID int references People(PID) primary key,
 office Office,
 clearance Clearance
 );

@@ -1,3 +1,8 @@
+INSERT INTO People(firstName, lastName, gender, age, race, state, emailAddress, password) 
+VALUES('Admin', 'Admin', 'M', 33, 'Other', 'NY', 'admin@marist.edu', '113459eb7bb31bddee85ade5230d6ad5d8b2fb52879e00a84ff6ae1067a210d3');
+
+INSERT INTO Employees(Eid, Clearance, Office) VALUES(1,'3','Admissions');
+
 INSERT INTO Departments VALUES
 (1,'MATH',1),
 (2,'CMPT',1),

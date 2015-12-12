@@ -26,7 +26,7 @@ VALUES('Jigsaw', 'Clownman', 'M', 33, 'Other', 'NY', 'Peek.a.boo@saw.com', '1134
 
 --Employee
 
-INSERT INTO Employees(Eid, Clearance, Office) VALUES(0,3,'Admissions');
+INSERT INTO Employees(Eid, Clearance, Office) VALUES(1,'3','Admissions');
 
 --Schools
 
