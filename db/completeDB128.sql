@@ -8,25 +8,25 @@ INSERT INTO Departments VALUES
 (5,'BIOL',1);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('CHEM', 1);
+VALUES(6, 'CHEM', 1);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('CIS', 2);
+VALUES(7, 'CIS', 2);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('MATH', 2);
+VALUES(8, 'MATH', 2);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('ACC', 2);
+VALUES(9, 'ACC', 2);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('PHY', 2);
+VALUES(10, 'PHY', 2);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('BIO', 2);
+VALUES(11, 'BIO', 2);
 
 INSERT INTO Departments(departmentName, school)
-VALUES('CHEM', 2);
+VALUES(12, 'CHEM', 2);
 INSERT INTO MaristMajors VALUES
 ('Applied Mathematics','N/A');
 INSERT INTO Courses VALUES
