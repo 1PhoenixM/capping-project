@@ -471,7 +471,7 @@ function saveCoursesThenRender(userCourses, isEmpty, messages, theCourses, chose
 					});
 					hasChecked = true;
 				}
-				client.query("INSERT INTO UsersToCourses SELECT $1, $2, $3, $4 WHERE NOT EXISTS ("+ checkQuery  +")", [uid,2,did,userCourses[course][1]],
+				client.query("INSERT INTO UsersToCourses (PID,school,DID,courseNumber) SELECT $1, $2, $3, $4 WHERE NOT EXISTS ("+ checkQuery  +")", [uid,2,did,userCourses[course][1]],
 				function(err,result){
 					//console.log(did);
 					numberOfCourses--; 
