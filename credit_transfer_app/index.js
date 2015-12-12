@@ -46,7 +46,7 @@ majorsQuery.on("row", function (row, result){
 });
 
 function updateSchools(){
-  var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College';");
+  var query = client.query("SELECT schoolName From Schools WHERE schoolName != 'Marist College' ORDER BY SID;");
   var externalSchools = [];
   query.on("row", function (row, result) {
     externalSchools.push(row.schoolname);
